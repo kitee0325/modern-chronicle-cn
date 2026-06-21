@@ -21,14 +21,6 @@ import s8bg from './assets/section8/background.png';
 import s8front from './assets/section8/frontend.png';
 import cotton from './assets/cotton-layer.png';
 import weathered from './assets/weathered-layer.png';
-import startBird1 from './assets/start/bird1.png';
-import startBird2 from './assets/start/bird2.png';
-import startBird3 from './assets/start/bird3.png';
-import startBird4 from './assets/start/bird4.png';
-import startBird5 from './assets/start/bird5.png';
-import startBird6 from './assets/start/bird6.png';
-import startBird7 from './assets/start/bird7.png';
-import startBird8 from './assets/start/bird8.png';
 
 export const preloadUrls: string[] = [
   s1bg,
@@ -50,14 +42,6 @@ export const preloadUrls: string[] = [
   s8front,
   cotton,
   weathered,
-  startBird1,
-  startBird2,
-  startBird3,
-  startBird4,
-  startBird5,
-  startBird6,
-  startBird7,
-  startBird8,
 ];
 
 /** 预加载所有图片，单张失败不阻塞，全部请求发出后 resolve */
