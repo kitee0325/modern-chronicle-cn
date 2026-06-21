@@ -1,0 +1,24 @@
+{
+  "canvas": { "width": 1440, "height": 810 },
+  "density": 2,
+  "outputDir": "src/assets/section9",
+  "compression": { "mode": "auto" },
+  "assets": [
+    {
+      "name": "background",
+      "input": "asset-sources/section9/background-source.png",
+      "output": "background.png",
+      "mode": "canvas",
+      "sourceDensity": 2,
+      "crop": { "unit": "px", "left": 4, "right": 4, "top": 0, "bottom": 0 }
+    },
+    {
+      "name": "illustration",
+      "input": "asset-sources/section9/illustration-source.png",
+      "output": "illustration.png",
+      "mode": "element",
+      "trimAlpha": true,
+      "bbox": { "x": 180, "y": 120, "width": 420, "height": 360 }
+    }
+  ]
+}

@@ -9,6 +9,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "deploy": "npm run build && gh-pages -d dist",
+    "assets:section": "node scripts/process-section-assets.mjs",
     "optimize:images": "node scripts/optimize-assets.mjs --images",
     "optimize:fonts": "node scripts/optimize-assets.mjs --fonts",
     "optimize:assets": "node scripts/optimize-assets.mjs",
