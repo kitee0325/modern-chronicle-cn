@@ -229,6 +229,15 @@ async function main() {
     for (const item of prepared) {
       await mkdir(dirname(item.outputPath), { recursive: true });
       await writeFile(item.outputPath, item.buffer);
+      if (item.report.mode === 'element') {
+        const positionPath = item.outputPath.replace(/\.png$/i, '.json');
+        const position = {
+          ...item.report.bbox,
+          canvas: config.canvas,
+          density: item.report.density,
+        };
+        await writeFile(positionPath, `${JSON.stringify(position, null, 2)}\n`);
+      }
     }
     await writeFile(join(outputDir, config.layoutFile), `${JSON.stringify(layout, null, 2)}\n`);
   }
