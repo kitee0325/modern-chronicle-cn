@@ -25,7 +25,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
     x,
     y,
     strategy,
-    refs,
+    refs: { setReference, setFloating },
   } = useFloating({
     open,
     placement: placement === 'top' ? 'top' : 'bottom',
@@ -39,7 +39,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
 
   return (
     <span
-      ref={refs.setReference}
+      ref={setReference}
       className="relative inline-block"
       onMouseEnter={() => setOpen(true)}
       onMouseLeave={() => setOpen(false)}
@@ -47,7 +47,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
       {children}
       {open && (
         <div
-          ref={refs.setFloating}
+          ref={setFloating}
           className="pointer-events-none z-50 whitespace-pre-wrap rounded-md bg-white/95 px-4 py-3 text-black shadow-lg"
           style={{
             textAlign: 'left',
