@@ -43,7 +43,7 @@
 - 每栋建筑声明自己的出现阈值；根据当前进度切换可见状态。
 - 列车位置由进度派生，不维护第二套动画进度，避免视觉与数字不同步。
 - 建筑出现队列只记录首次跨过的新锚点；严格按建筑索引调度，组件卸载时清理未执行事件。
-- 通过 `onRevealStateChange({ isIdle, observedProgress })` 向协调层提供可查询的电平状态，而非只触发一次的事件。只有处理完 `observedProgress` 产生的全部锚点、队列为空且最后一栋稳定后，`isIdle` 才能为 true。协调层只接受 `isIdle: true` 且 `observedProgress === 100` 的终态信号；正常完成时不得在该信号前开始完整画面的停留计时。异常降级直接完成剩余建筑并清空队列，卸载则取消队列。
+- 通过 `onRevealStateChange({ isIdle, observedProgress })` 向协调层提供可查询的电平状态，而非只触发一次的事件。只有处理完 `observedProgress` 产生的全部锚点、队列为空且最后一栋稳定后，`isIdle` 才能为 true。协调层只接受 `isIdle: true` 且 `observedProgress === 100` 的终态信号；不得在该信号前开始完整画面的停留计时。资源状态为 `degraded` 时仍按进度 100 正常完成建筑队列，不跳过动画；仅 reduced-motion 直接显示全部建筑。卸载则取消队列。
 
 ### `useAssetPreloader`
 
@@ -51,6 +51,7 @@
 - 字体优先通过 `document.fonts.load('16px "FZ Da Biao Song"', '城市记忆')` 确认可用；返回空数组或 Promise 拒绝均记为失败。`document.fonts` 不可用时，使用 `fetch` 请求当前 `@font-face` 的 WOFF2 URL，HTTP 成功且响应体可读取即记为兼容降级完成。
 - 图片先注册 `load`/`error`，再设置 `src`；收到 `load` 后若 `decode()` 可用则等待解码成功才完成，解码拒绝记为失败；没有 `decode()` 时以 `load` 为完成。每张图片的 `load`、`error`、`decode()` 共用一次性结算器。
 - Hook 输出 `progress`、`status` 和失败资源列表。真实资源完成数决定目标进度，视觉进度使用 `requestAnimationFrame` 单调追赶目标值，避免少量资源逐项完成时列车突然跳跃。
+- 首屏与后台加载共用模块级 `preloadAssetOnce` 注册表。图片以 URL、字体以稳定的字体任务键注册共享 `in-flight | settled` Promise；Strict Mode 第二次 effect 只订阅同一个底层 Promise，不创建第二个 `Image`、字体加载或 fetch 请求。每次 Hook 运行仍使用自己的 generation/terminal 标志决定是否接收共享 Promise 的结果。
 - 关键资源尚未全部结束时视觉进度最多为 95%；全部成功或降级结束后才缓出到 100%。展示和 ARIA 使用整数值。
 - 单个资源失败记为降级完成，不阻塞其余资源；首屏加载超过 12 秒时，将未完成资源统一标记为降级并推进到 100%，确保页面可以进入。
 - 每项资源只能结算一次。Hook 为每次运行维护 generation 和 terminal 标志：超时或卸载后，迟到的 `load`、`error`、`decode()` 或字体 Promise 不得再次增加完成数、修改失败列表或回写状态；自然完成时立即清除 12 秒超时器。
@@ -108,9 +109,11 @@ Loading 首帧即使用 `position: fixed; inset: 0` 和可靠层级覆盖视口�
 
 - 使用假计时器或可控时钟验证进度单调，以及 `loading → 等待建筑队列 → 350ms settling → 420ms exiting → content` 的完整顺序；同时验证 reduced-motion 的 100ms 停留与 150ms 退出。
 - 使用可控的图片与字体 Promise 验证：关键资源完成数映射到目标进度、95% 上限、失败计为降级完成、12 秒超时，以及卸载后不更新状态；超时后再成功或失败的 Promise 不得二次结算。
+- 在 Strict Mode setup/cleanup/setup 下验证每个关键图片 URL 和字体任务只创建一次底层请求，后一次 Hook 运行可订阅并接收共享 Promise 的结果。
 - 分别验证 `document.fonts` 正常、空结果、拒绝和缺失时的 fetch 兼容分支，以及图片 `load/error/decode` 的一次性结算顺序。
 - 验证进入 `content` 后 Scene 04–21 才开始后台预载；在 Strict Mode setup/cleanup/setup 下，同一 URL 只有一个共享任务、全局并发不超过 2、所有唯一 URL 均至少被尝试一次。
 - 注入“100% 与最后一批建筑同批入队”的场景，验证协调层只接受 `{ isIdle: true, observedProgress: 100 }`，不会使用旧 idle 状态提前进入 `settling`。
+- 验证正常完成、单项失败和 12 秒超时均让建筑按终态进度正常完成队列；只有 reduced-motion 直接显示全部建筑。
 - 注入跳跃进度验证多个建筑仍按索引以 90ms 间隔出现，且列车与数字不受事件队列影响。
 - 在 React Strict Mode 下验证只有一个有效动画循环，卸载后无状态更新。
 - 在 320px、600px 和桌面视口浏览器检查主体、百分比与文案无溢出或重叠。
