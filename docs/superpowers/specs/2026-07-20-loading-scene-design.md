@@ -43,23 +43,25 @@
 - 每栋建筑声明自己的出现阈值；根据当前进度切换可见状态。
 - 列车位置由进度派生，不维护第二套动画进度，避免视觉与数字不同步。
 - 建筑出现队列只记录首次跨过的新锚点；严格按建筑索引调度，组件卸载时清理未执行事件。
-- 通过 `onRevealQueueIdle` 通知协调层队列已清空且最后一栋稳定；正常完成时不得在该通知前开始完整画面的停留计时。异常降级直接完成剩余建筑并清空队列，卸载则取消队列。
+- 通过 `onRevealStateChange({ isIdle, observedProgress })` 向协调层提供可查询的电平状态，而非只触发一次的事件。只有处理完 `observedProgress` 产生的全部锚点、队列为空且最后一栋稳定后，`isIdle` 才能为 true。协调层只接受 `isIdle: true` 且 `observedProgress === 100` 的终态信号；正常完成时不得在该信号前开始完整画面的停留计时。异常降级直接完成剩余建筑并清空队列，卸载则取消队列。
 
 ### `useAssetPreloader`
 
 - 首屏关键资源为方正大标宋字体，以及 Scene 01–03 当前声明的全部图片。
-- 字体通过 `document.fonts.load` 确认可用；图片使用 `Image` 加载并通过 `decode()` 确认可渲染。
+- 字体优先通过 `document.fonts.load('16px "FZ Da Biao Song"', '城市记忆')` 确认可用；返回空数组或 Promise 拒绝均记为失败。`document.fonts` 不可用时，使用 `fetch` 请求当前 `@font-face` 的 WOFF2 URL，HTTP 成功且响应体可读取即记为兼容降级完成。
+- 图片先注册 `load`/`error`，再设置 `src`；收到 `load` 后若 `decode()` 可用则等待解码成功才完成，解码拒绝记为失败；没有 `decode()` 时以 `load` 为完成。每张图片的 `load`、`error`、`decode()` 共用一次性结算器。
 - Hook 输出 `progress`、`status` 和失败资源列表。真实资源完成数决定目标进度，视觉进度使用 `requestAnimationFrame` 单调追赶目标值，避免少量资源逐项完成时列车突然跳跃。
 - 关键资源尚未全部结束时视觉进度最多为 95%；全部成功或降级结束后才缓出到 100%。展示和 ARIA 使用整数值。
 - 单个资源失败记为降级完成，不阻塞其余资源；首屏加载超过 12 秒时，将未完成资源统一标记为降级并推进到 100%，确保页面可以进入。
-- 卸载时停止动画循环、超时计时器和尚未生效的状态更新。图片请求无法可靠取消时允许浏览器完成缓存，但不再回写已卸载组件。
+- 每项资源只能结算一次。Hook 为每次运行维护 generation 和 terminal 标志：超时或卸载后，迟到的 `load`、`error`、`decode()` 或字体 Promise 不得再次增加完成数、修改失败列表或回写状态；自然完成时立即清除 12 秒超时器。
+- 卸载时停止动画循环、超时计时器和尚未生效的状态更新。图片请求无法可靠取消时允许浏览器完成缓存，但由 generation/terminal 校验屏蔽迟到结果。
 
 ### `preloadRemainingScenes`
 
 - 页面进入 `content` 后，从 Scene 04 开始预载其余场景图片。
-- 同时最多运行 2 个图片任务，避免与首屏内容请求争抢全部带宽。
+- 模块级共享一个 URL → `in-flight | settled` Promise 注册表和单一并发池，同时最多运行 2 个图片任务，避免与首屏内容请求争抢全部带宽。
 - 后台预载不再影响 Loading、页面阶段或用户交互；单张失败只结束对应任务，不重试、不弹出提示。
-- 同一 URL 在当前会话内只发起一次预载；浏览器缓存负责后续场景复用。
+- 同一 URL 在当前会话内只注册一次任务。Strict Mode 的 setup/cleanup/setup 复用同一注册表与并发池：已开始任务继续完成，未开始的唯一 URL 由后一次调用补充进同一队列，不创建第二套调度器；浏览器缓存负责后续场景复用。
 
 ### 全局字体
 
@@ -76,7 +78,7 @@
 - `exiting`：覆盖层在正常模式下用 420ms 退出，主内容同步进入；reduced-motion 下只做 150ms 淡出。
 - `content`：从 DOM 移除 Loading，避免它继续拦截交互。
 
-资源 Hook 只产出单调的 0–100 数值和 `loading | complete | degraded` 结果。`App` 在进度首次到达 100 时进入 `settling`，等待 `LoadingCity` 报告出现队列清空后才启动 350ms 停留计时，再进入 `exiting`；420ms 退出动画完成后进入 `content`。reduced-motion 对应的停留和退出时长分别为 100ms 与 150ms。阶段仍由 `App` 协调，资源 Hook 不直接控制视图阶段。
+资源 Hook 只产出单调的 0–100 数值和 `loading | complete | degraded` 结果。`App` 保持在 `loading`，直到资源进度到达 100%，并收到 `LoadingCity` 的 `{ isIdle: true, observedProgress: 100 }` 终态电平；随后才进入 `settling` 并启动 350ms 停留计时，再进入 `exiting`，420ms 后进入 `content`。reduced-motion 对应的停留和退出时长分别为 100ms 与 150ms。阶段仍由 `App` 协调，资源 Hook 不直接控制视图阶段。
 
 Loading 首帧即使用 `position: fixed; inset: 0` 和可靠层级覆盖视口，主内容初始不可见并设置 `inert` 或等效交互隔离。进入 `exiting` 后才开始交叉淡入；覆盖层结束并移除后恢复主内容交互。Loading 不抢占或移动焦点。
 
@@ -86,7 +88,7 @@ Loading 首帧即使用 `position: fixed; inset: 0` 和可靠层级覆盖视口�
 
 - 字体加载失败时使用本地中文衬线字体兜底，不阻塞页面进入。
 - `complete | degraded` 都可进入 `settling`；12 秒超时走降级结果而非永久停留。
-- `document.fonts` 或 `Image.decode()` 不可用时，分别退化为字体请求完成和图片 `load` 事件完成。
+- `document.fonts` 或 `Image.decode()` 不可用时，按 `useAssetPreloader` 规定的 fetch 与图片 `load` 兼容分支结算。
 - 页面切到后台时，浏览器可能降低计时器频率；恢复后以当前时间重新计算进度，避免大量补帧。
 - 动画不可用或用户要求减少动态效果时，页面仍显示清晰的百分比和状态文案。
 
@@ -105,8 +107,10 @@ Loading 首帧即使用 `position: fixed; inset: 0` 和可靠层级覆盖视口�
 ## 验证矩阵
 
 - 使用假计时器或可控时钟验证进度单调，以及 `loading → 等待建筑队列 → 350ms settling → 420ms exiting → content` 的完整顺序；同时验证 reduced-motion 的 100ms 停留与 150ms 退出。
-- 使用可控的图片与字体 Promise 验证：关键资源完成数映射到目标进度、95% 上限、失败计为降级完成、12 秒超时，以及卸载后不更新状态。
-- 验证进入 `content` 后 Scene 04–21 才开始后台预载，并发数不超过 2，同一 URL 不重复调度。
+- 使用可控的图片与字体 Promise 验证：关键资源完成数映射到目标进度、95% 上限、失败计为降级完成、12 秒超时，以及卸载后不更新状态；超时后再成功或失败的 Promise 不得二次结算。
+- 分别验证 `document.fonts` 正常、空结果、拒绝和缺失时的 fetch 兼容分支，以及图片 `load/error/decode` 的一次性结算顺序。
+- 验证进入 `content` 后 Scene 04–21 才开始后台预载；在 Strict Mode setup/cleanup/setup 下，同一 URL 只有一个共享任务、全局并发不超过 2、所有唯一 URL 均至少被尝试一次。
+- 注入“100% 与最后一批建筑同批入队”的场景，验证协调层只接受 `{ isIdle: true, observedProgress: 100 }`，不会使用旧 idle 状态提前进入 `settling`。
 - 注入跳跃进度验证多个建筑仍按索引以 90ms 间隔出现，且列车与数字不受事件队列影响。
 - 在 React Strict Mode 下验证只有一个有效动画循环，卸载后无状态更新。
 - 在 320px、600px 和桌面视口浏览器检查主体、百分比与文案无溢出或重叠。
