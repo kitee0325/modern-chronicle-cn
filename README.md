@@ -1,97 +1,15 @@
-# React + TypeScript + Vite
+# Modern Chronicle CN
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
-
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
-
-## Static assets optimization
-
-Scripts compress PNGs and subset OTF fonts (Latin + digits), then overwrite originals. **Flow**: backup to `assets-backup/` → run optimization → overwrite files in place.
-
-- **PNG**: high compression (adaptive filtering + oxipng); default uses palette for ~30% size reduction. Use `--no-aggressive` for strict lossless only.
-- **Fonts**: subset and overwrite original `.otf` in place (no separate subset file).
-
-**Commands** (from project root):
+基于 React、TypeScript 与 Vite 的前端项目。
 
 ```bash
-npm run optimize:assets   # backup → optimize images + fonts → overwrite
-npm run optimize:images   # backup → PNG only
-npm run optimize:fonts    # backup → OTF only
-npm run optimize:reset    # restore from assets-backup/ to original paths
+npm install
+npm run dev
 ```
 
-**Options** (after the script):
+可用命令：
 
-- `--dry-run` — list files and estimated savings; no backup or writes.
-- `--root <path>` — only process under `<path>` (e.g. `src/assets`).
-- `--no-aggressive` — PNG: lossless only (no palette); smaller compression gain.
-
-**Reset**: run `npm run optimize:reset` to restore from `assets-backup/` to original locations. Backup is kept after restore so you can run reset again or compare.
+- `npm run dev`：启动开发服务器
+- `npm run build`：类型检查并构建生产版本
+- `npm run lint`：运行 ESLint
+- `npm run preview`：预览生产构建
