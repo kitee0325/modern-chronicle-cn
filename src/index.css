@@ -91,7 +91,7 @@ select {
 }
 
 .chronicle-frame {
-  --bottom-note-height: 70px;
+  --bottom-note-height: 105px;
 
   position: relative;
   width: min(100vw, 177.7778vh);
@@ -177,44 +177,10 @@ select {
   height: var(--bottom-note-height);
   background-position: left center;
   background-repeat: no-repeat;
-  background-size: auto 100%;
+  background-size: 100% 100%;
   opacity: 0;
   pointer-events: none;
-  will-change: opacity;
-}
-
-.chronicle-bottom-notes {
-  position: absolute;
-  z-index: 11;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  height: var(--bottom-note-height);
-  overflow: hidden;
-  pointer-events: none;
-}
-
-.chronicle-bottom-note {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  overflow: hidden;
-  padding: 8px clamp(24px, 7vw, 112px) 7px;
-  color: #191b1a;
-  font-family: 'FZ Da Biao Song', 'STSong', 'Songti SC', 'SimSun', serif;
-  font-size: 12px;
-  font-weight: 600;
-  line-height: 1.45;
-  letter-spacing: 0.02em;
-  opacity: 0;
-  visibility: hidden;
-  will-change: opacity;
-}
-
-.chronicle-bottom-note > p {
-  margin: 0;
+  will-change: transform, opacity;
 }
 
 .chronicle-track-surface {
@@ -244,6 +210,25 @@ select {
   user-select: none;
 }
 
+.chronicle-track-state {
+  position: absolute;
+  inset: 0;
+}
+
+.chronicle-track-slot[data-scene="2"] .chronicle-track-state[data-state="01"] {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.chronicle-track-slot[data-scene="6"] .chronicle-track-state[data-state="00"] {
+  opacity: 1;
+}
+
+.chronicle-track-slot[data-scene="6"] .chronicle-track-state[data-state="01"] {
+  opacity: 0;
+  visibility: hidden;
+}
+
 /* Remove the 1–3 px export-edge columns from this panorama. */
 .chronicle-track-slot[data-scene="3"][data-layer="background"] > img {
   width: calc(100% * 7306 / 7303);
@@ -256,7 +241,7 @@ select {
   overflow: hidden;
   opacity: 0;
   visibility: hidden;
-  will-change: transform, opacity, clip-path;
+  will-change: transform, opacity;
 }
 
 .chronicle-cue:not([data-cropped]) {
@@ -286,10 +271,10 @@ select {
   align-items: flex-start;
   color: #c9b27f;
   font-family: 'FZ Da Biao Song', 'STSong', 'Songti SC', 'SimSun', serif;
-  font-size: min(2.47vh, 1.39vw);
+  font-size: 3.9506vh;
   font-weight: 400;
-  line-height: 1.6;
-  letter-spacing: 0.025em;
+  line-height: 2.1875;
+  letter-spacing: 0.08em;
   white-space: nowrap;
 }
 
@@ -325,6 +310,10 @@ select {
 
 .chronicle-cue--chart {
   z-index: 3;
+}
+
+.chronicle-cue--illustration {
+  z-index: 4;
 }
 
 .chronicle-boat-viewport {
@@ -374,27 +363,13 @@ select {
   transform-origin: 50% 70%;
 }
 
-.chronicle-boat__skin--ship,
-.chronicle-boat__skin--ship-close {
+.chronicle-boat__skin--ship {
   top: 50%;
   left: 50%;
   width: min(43.6vw, 628px);
   height: auto;
   aspect-ratio: 777 / 539;
   transform: translate(-42%, -58%);
-}
-
-.chronicle-boat__skin--ship-close {
-  width: min(47.2vw, 680px);
-  aspect-ratio: 777 / 539;
-}
-
-.chronicle-boat__skin--final {
-  top: 5%;
-  left: 18%;
-  width: 68%;
-  height: auto;
-  aspect-ratio: 144 / 132;
 }
 
 .chronicle--static {
@@ -532,6 +507,56 @@ select {
 
 .chronicle-cover__preface-copy p {
   margin: 0;
+}
+
+.chronicle-ending {
+  position: absolute;
+  z-index: 24;
+  inset: 0;
+  overflow: hidden;
+  background:
+    linear-gradient(90deg, rgb(5 15 24 / 72%) 0%, rgb(5 15 24 / 86%) 48%, rgb(5 15 24 / 94%) 100%),
+    linear-gradient(180deg, rgb(5 15 24 / 12%) 0%, rgb(5 15 24 / 62%) 100%);
+  color: #fff;
+  opacity: 0;
+  pointer-events: none;
+  text-shadow: 0 1px 1px rgb(5 8 7 / 35%);
+  visibility: hidden;
+  will-change: opacity;
+}
+
+.chronicle-ending__panel {
+  position: absolute;
+  top: 14%;
+  left: 57%;
+  width: 29%;
+}
+
+.chronicle-ending__panel h2 {
+  margin: 0 0 0.2em;
+  font-size: clamp(2.25rem, 4.1667vw, 7.5rem);
+  font-weight: 400;
+  line-height: 1.3333;
+}
+
+.chronicle-ending__mask {
+  height: 14em;
+  overflow: hidden;
+  font-size: clamp(0.875rem, 0.9722vw, 1.75rem);
+  line-height: 1.7143;
+  text-align: justify;
+}
+
+.chronicle-ending__copy {
+  will-change: transform;
+}
+
+.chronicle-ending__copy p {
+  margin: 0 0 1em;
+}
+
+.chronicle-ending__copy p:last-child {
+  margin-bottom: 0;
 }
 
 .motion-debug {
@@ -767,41 +792,39 @@ select {
   stroke-width: 2;
 }
 
-.app-loading__meta {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
+.app-loading__status {
   width: calc(100% - 13%);
   margin: clamp(14px, 2vw, 24px) auto 0;
   border-top: 1px solid rgb(48 37 38 / 16%);
   padding-top: clamp(14px, 2vw, 22px);
-}
-
-.app-loading__status,
-.app-loading__percentage {
-  margin: 0;
-  font-weight: 400;
-}
-
-.app-loading__status {
   font-size: clamp(1rem, 1.8vw, 1.35rem);
+  font-weight: 400;
   letter-spacing: 0.28em;
+  text-align: center;
 }
 
-.app-loading__percentage {
-  display: flex;
-  align-items: baseline;
-  min-width: 4.3ch;
-  justify-content: flex-end;
-  color: var(--forest);
-  font-size: clamp(1.65rem, 3.4vw, 2.8rem);
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.02em;
+.app-loading__fullscreen-hint {
+  position: absolute;
+  bottom: clamp(20px, 4vh, 42px);
+  left: 50%;
+  width: max-content;
+  max-width: calc(100vw - 32px);
+  margin: 0;
+  color: var(--muted-ink);
+  font-size: clamp(0.78rem, 1.1vw, 0.95rem);
+  letter-spacing: 0.08em;
+  text-align: center;
+  transform: translateX(-50%);
 }
 
-.app-loading__percent-sign {
-  margin-left: 0.12em;
-  font-size: 0.5em;
+.app-loading__fullscreen-hint kbd {
+  padding: 0.08em 0.42em;
+  border: 1px solid rgb(48 37 38 / 24%);
+  border-radius: 3px;
+  background: rgb(255 255 255 / 28%);
+  color: var(--ink);
+  font: inherit;
+  letter-spacing: 0.04em;
 }
 
 @media (max-width: 600px) {
@@ -813,19 +836,17 @@ select {
     visibility: hidden;
   }
 
-  .app-loading__meta {
-    width: calc(100% - 6%);
-    align-items: flex-end;
-  }
-
   .app-loading__status {
+    width: calc(100% - 6%);
     font-size: 0.92rem;
     letter-spacing: 0.16em;
     white-space: nowrap;
   }
 
-  .app-loading__percentage {
-    font-size: 1.55rem;
+  .app-loading__fullscreen-hint {
+    bottom: 20px;
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
   }
 }
 

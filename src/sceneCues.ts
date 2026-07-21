@@ -8,7 +8,7 @@ import s16ChartSvg from './assets/charts/s16-chart.svg?url'
 import s17ChartSvg from './assets/charts/s17-chart.svg?url'
 import s19ChartSvg from './assets/charts/s19-chart.svg?url'
 
-export type CueKind = 'title' | 'copy' | 'chart' | 'source'
+export type CueKind = 'title' | 'copy' | 'chart' | 'illustration' | 'source'
 export type CueMode = 'initial' | 'scroll'
 
 export type CueCrop = {
@@ -44,6 +44,9 @@ type SceneCueManifest = {
 const cueAsset = (name: string) =>
   `${import.meta.env.BASE_URL}assets/cues/${name}.png`
 
+const illustrationAsset = (name: string) =>
+  `${import.meta.env.BASE_URL}assets/illustrations/${name}.png`
+
 const chartSvgs: Record<string, string> = {
   's02-chart': s02ChartSvg,
   's06-chart': s06ChartSvg,
@@ -65,6 +68,7 @@ const cue = (
   width: number,
   height: number,
   options: {
+    asset?: string
     assetId?: string
     mode?: CueMode
     crop?: CueCrop
@@ -74,7 +78,7 @@ const cue = (
   id,
   figmaNodeId,
   kind,
-  asset: cueAsset(options.assetId ?? id),
+  asset: options.asset ?? cueAsset(options.assetId ?? id),
   x,
   y,
   width,
@@ -142,7 +146,7 @@ export const sceneCueManifests: readonly SceneCueManifest[] = [
     cue('s07-title', '76:10297', 'title', 128, 82, 307, 40),
     cue('s07-copy', '76:10296', 'copy', 128, 181, 290, 120),
   ] },
-  { figmaFrameId: '76:10299', frameHeight: 810, cues: [cue('s08-copy', '76:10398', 'copy', 90, 27, 720, 104)] },
+  { figmaFrameId: '76:10299', frameHeight: 810, cues: [cue('s08-copy', '76:10411', 'copy', 203, 50, 802, 384)] },
   { figmaFrameId: '76:10543', frameHeight: 810, cues: [
     cue('s09-title', '76:10739', 'title', 73, 69, 280, 40),
     cue('s09-copy', '76:10738', 'copy', 73, 166, 354, 127),
@@ -156,6 +160,9 @@ export const sceneCueManifests: readonly SceneCueManifest[] = [
   ] },
   { figmaFrameId: '265:7684', frameHeight: 810, cues: [
     cue('s11-chart', '265:7694', 'chart', 538, 71, 950, 396),
+    cue('s11-handwritten-letter', '76:11933', 'illustration', 1632, 189, 820, 522, {
+      asset: illustrationAsset('handwritten-letter'),
+    }),
     cue('s11-copy-1', '76:11960', 'copy', 130, 53, 400, 629, {
       assetId: 's11-copy',
       crop: { x: 0, y: 0, width: 400, height: 629, sourceWidth: 4963, sourceHeight: 629 },

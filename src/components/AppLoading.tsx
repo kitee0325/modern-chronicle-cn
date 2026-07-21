@@ -50,14 +50,12 @@ export function AppLoading({
           onRevealQueueChange={onRevealQueueChange}
         />
 
-        <div className="app-loading__meta" aria-hidden="true">
-          <p className="app-loading__status">城市记忆正在展开</p>
-          <p className="app-loading__percentage">
-            <span>{String(displayedProgress).padStart(2, '0')}</span>
-            <span className="app-loading__percent-sign">%</span>
-          </p>
-        </div>
+        <p className="app-loading__status" aria-hidden="true">加载中</p>
       </div>
+
+      <p className="app-loading__fullscreen-hint">
+        强烈推荐全屏访问，按 <kbd>F11</kbd> 开启全屏
+      </p>
     </div>
   )
 }

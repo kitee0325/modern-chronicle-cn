@@ -39,7 +39,7 @@ export const sceneAssets = [
     foreground: sceneAssetUrl(3, 'foreground', '00'),
     states: [
       { id: '00', foreground: sceneAssetUrl(3, 'foreground', '00') },
-      { id: '01', foreground: sceneAssetUrl(3, 'foreground', '01', 'svg') },
+      { id: '01', foreground: sceneAssetUrl(3, 'foreground', '01') },
     ],
   },
   {

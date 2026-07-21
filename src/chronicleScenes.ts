@@ -34,12 +34,12 @@ const sceneDetails = [
   ['夜抵车站', 4586, 'hybrid', 2.8, 'horizontal'],
   ['再入车厢', 2936, 'interior', 2.2, 'dive'],
   ['向海而行', 5754, 'exterior', 3.6, 'horizontal'],
-  ['土地的考验', 11694, 'exterior', 5.4, 'surface'],
+  ['土地的考验', 11694, 'exterior', 5.4, 'horizontal'],
   ['纸上的年代', 4162, 'interior', 2.6, 'dive'],
   ['教育与远方', 9278, 'exterior', 4.5, 'horizontal'],
   ['湖光新章', 5764, 'exterior', 3.2, 'horizontal'],
   ['城市生长', 5702, 'exterior', 3.2, 'surface'],
-  ['车窗里的今天', 3844, 'interior', 2.5, 'dive'],
+  ['车窗里的今天', 3844, 'interior', 2.1, 'dive'],
   ['水面之上', 3844, 'exterior', 2.6, 'surface'],
   ['驶向当下', 7968, 'interior', 3.8, 'dive'],
   ['未完的旅程', 15734, 'exterior', 6.2, 'horizontal'],
@@ -54,7 +54,7 @@ const sceneDetails = [
 const boatSkins: readonly BoatSkin[] = [
   'paper', 'paper', 'paper', 'chalk', 'paper', 'paper',
   'paper', 'paper', 'paper', 'paper', 'paper', 'paper',
-  'paper', 'paper', 'paper', 'ship', 'ship-close', 'ship-close', 'final',
+  'paper', 'paper', 'paper', 'paper', 'ship', 'ship', 'ship',
 ]
 
 export const chronicleScenes: readonly ChronicleScene[] = sceneAssets.map(
@@ -71,7 +71,21 @@ export const chronicleScenes: readonly ChronicleScene[] = sceneAssets.map(
       duration,
       transition,
       boatSkin: boatSkins[index],
-      timing: index === 0
+      timing: asset.id === 16
+        ? {
+            contentRevealRatio: 0.21,
+            contentHoldRatio: 0.24,
+            cameraRatio: 0.55,
+            transitionRatio: 0,
+          }
+        : asset.id === 17
+          ? {
+              contentRevealRatio: 0,
+              contentHoldRatio: 0.38,
+              cameraRatio: 0.46,
+              transitionRatio: 0.16,
+            }
+        : index === 0
         ? {
             contentRevealRatio: 0.18,
             contentHoldRatio: 0.2,
