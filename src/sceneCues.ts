@@ -1,7 +1,9 @@
 import s02ChartSvg from './assets/charts/s02-chart.svg?url'
 import s06ChartSvg from './assets/charts/s06-chart.svg?url'
 import s10ChartSvg from './assets/charts/s10-chart.svg?url'
+import s11ChartSvg from './assets/charts/s11-chart.svg?url'
 import s13ChartSvg from './assets/charts/s13-chart.svg?url'
+import s14ChartSvg from './assets/charts/s14-chart.svg?url'
 import s16ChartSvg from './assets/charts/s16-chart.svg?url'
 import s17ChartSvg from './assets/charts/s17-chart.svg?url'
 import s19ChartSvg from './assets/charts/s19-chart.svg?url'
@@ -46,7 +48,9 @@ const chartSvgs: Record<string, string> = {
   's02-chart': s02ChartSvg,
   's06-chart': s06ChartSvg,
   's10-chart': s10ChartSvg,
+  's11-chart': s11ChartSvg,
   's13-chart': s13ChartSvg,
+  's14-chart': s14ChartSvg,
   's16-chart': s16ChartSvg,
   's17-chart': s17ChartSvg,
   's19-chart': s19ChartSvg,
@@ -100,7 +104,7 @@ export const sceneCueManifests: readonly SceneCueManifest[] = [
       assetId: 's02-copy',
       crop: { x: 2700, y: 0, width: 316, height: 178, sourceWidth: 3016, sourceHeight: 178 },
     }),
-    cue('s02-chart', '15:688', 'chart', 2855, 310, 568, 403),
+    cue('s02-chart', '15:688', 'chart', 2853.040039, 309.827637, 567.959961, 403.172363),
     cue('s02-source', '15:682', 'source', 0, 741, 4517, 70, {
       text: ['数据来源：CountryEconomy 网站。'],
     }),
@@ -129,7 +133,7 @@ export const sceneCueManifests: readonly SceneCueManifest[] = [
   { figmaFrameId: '76:9890', frameHeight: 810, cues: [
     cue('s06-title', '76:9936', 'title', 140, 103, 307, 40),
     cue('s06-copy', '76:9975', 'copy', 147, 190, 551, 100),
-    cue('s06-chart', '76:9937', 'chart', 146, 343, 520, 349),
+    cue('s06-chart', '76:9937', 'chart', 146, 343, 520.000061, 349.386414),
     cue('s06-source', '76:9971', 'source', 0, 740, 1440, 70, {
       text: ['数据来源：国家统计局国民经济综合统计司编，《新中国五十年统计资料汇编》，北京：中国统计出版社（1999 年）。'],
     }),
@@ -143,14 +147,15 @@ export const sceneCueManifests: readonly SceneCueManifest[] = [
     cue('s09-title', '76:10739', 'title', 73, 69, 280, 40),
     cue('s09-copy', '76:10738', 'copy', 73, 166, 354, 127),
   ] },
-  { figmaFrameId: '76:11395', frameHeight: 810, cues: [
+  { figmaFrameId: '265:4689', frameHeight: 810, cues: [
     cue('s10-copy', '76:11710', 'copy', 102, 77, 566, 235),
-    cue('s10-chart', '76:11535', 'chart', 1151, 103, 1685, 707),
+    cue('s10-chart', '265:4833', 'chart', 1150.5, 103, 1685, 707),
     cue('s10-source', '76:11717', 'source', 0, 740, 2834, 70, {
       text: ['数据来源：[1] 国家统计局国民经济综合统计司编，《新中国五十年统计资料汇编》，北京：中国统计出版社（1999 年）。[2] 徐安琪（2000），《择偶标准：五十年变迁及其原因分析》，载《社会学研究》，第 6 期，第 18—30 页。'],
     }),
   ] },
-  { figmaFrameId: '76:11721', frameHeight: 810, cues: [
+  { figmaFrameId: '265:7684', frameHeight: 810, cues: [
+    cue('s11-chart', '265:7694', 'chart', 538, 71, 950, 396),
     cue('s11-copy-1', '76:11960', 'copy', 130, 53, 400, 629, {
       assetId: 's11-copy',
       crop: { x: 0, y: 0, width: 400, height: 629, sourceWidth: 4963, sourceHeight: 629 },
@@ -192,13 +197,14 @@ export const sceneCueManifests: readonly SceneCueManifest[] = [
       assetId: 's13-copy',
       crop: { x: 2780, y: 0, width: 760, height: 196, sourceWidth: 3540, sourceHeight: 196 },
     }),
-    cue('s13-chart', '76:12129', 'chart', 2556, 360, 832, 284),
+    cue('s13-chart', '265:6426', 'chart', 983, 67, 830.06897, 281),
     cue('s13-source', '76:12733', 'source', 0, 740, 3630, 70, {
       text: ['数据来源：[1] 中国国家统计局《全国人口普查主要数据公报》（1957 年、1964 年、1982 年、1990 年、2000 年）；[2] 中国国家统计局：1995 年全国 1% 人口抽样调查。'],
     }),
   ] },
   { figmaFrameId: '76:13394', frameHeight: 810, cues: [
     cue('s14-copy', '76:13919', 'copy', 110, 42, 559, 256),
+    cue('s14-chart', '265:10821', 'chart', 873, 56, 1990, 450.125244),
     cue('s14-source', '76:13927', 'source', 828, 743, 1585, 67, {
       crop: { x: 0, y: 0, width: 1439, height: 71, sourceWidth: 1585, sourceHeight: 71 },
       text: ['数据来源：中华人民共和国教育部（历年）、中国教育统计年鉴（1949—1981）。'],
@@ -208,12 +214,12 @@ export const sceneCueManifests: readonly SceneCueManifest[] = [
   { figmaFrameId: '76:14958', frameHeight: 810, cues: [
     cue('s16-title', '76:15098', 'title', 338, 41, 439, 96),
     cue('s16-copy', '76:15099', 'copy', 344, 152, 421, 72),
-    cue('s16-chart', '76:15101', 'chart', 956, 138, 626, 324),
+    cue('s16-chart', '76:15101', 'chart', 956, 136.040039, 625.600098, 323.959961),
   ] },
   { figmaFrameId: '76:16088', frameHeight: 810, cues: [
     cue('s17-title', '76:16656', 'title', 156, 41, 439, 96),
     cue('s17-copy', '76:16657', 'copy', 162, 152, 423, 96),
-    cue('s17-chart', '76:16509', 'chart', 841, 69, 919, 439),
+    cue('s17-chart', '76:16509', 'chart', 841, 69, 918.649719, 433),
     cue('s17-source-copy', '76:20779', 'copy', 0, 570, 1922, 160, {
       assetId: 's17-source',
       crop: { x: 0, y: 0, width: 1922, height: 160, sourceWidth: 1922, sourceHeight: 240 },
