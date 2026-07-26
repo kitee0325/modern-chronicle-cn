@@ -9,12 +9,22 @@ export type SceneAssetState = {
   id: '00' | '01'
   background?: string
   foreground?: string
+  foregroundCrop?: SceneAssetCrop
+}
+
+export type SceneAssetCrop = {
+  canvasWidth: number
+  canvasHeight: number
+  x: number
+  y: number
+  width: number
+  height: number
 }
 
 const sceneAssetUrl = (
   scene: number,
   file: 'background' | 'foreground',
-  state?: SceneAssetState['id'],
+  state?: string,
   extension: 'png' | 'svg' = 'png',
 ) => {
   const sceneDirectory = `Scene_${String(scene).padStart(2, '0')}`
@@ -39,7 +49,18 @@ export const sceneAssets = [
     foreground: sceneAssetUrl(3, 'foreground', '00'),
     states: [
       { id: '00', foreground: sceneAssetUrl(3, 'foreground', '00') },
-      { id: '01', foreground: sceneAssetUrl(3, 'foreground', '01') },
+      {
+        id: '01',
+        foreground: sceneAssetUrl(3, 'foreground', '01-crop'),
+        foregroundCrop: {
+          canvasWidth: 8588,
+          canvasHeight: 1620,
+          x: 4521,
+          y: 448,
+          width: 2456,
+          height: 1171,
+        },
+      },
     ],
   },
   {

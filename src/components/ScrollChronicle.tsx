@@ -18,7 +18,7 @@ import { CoverMotionDebugPanel } from './CoverMotionDebugPanel'
 
 gsap.registerPlugin(ScrollTrigger)
 
-const ACTIVE_ASSET_RADIUS = 3
+const ASSET_WINDOW_RADIUS = 2
 const DELAYED_CUE_REVEAL_CAMERA_RATIO = 0.36
 const SCROLL_DISTANCE_PER_TIMELINE_SECOND = 1.05
 // Positive values delay the note layer relative to its chart; negative values advance it.
@@ -32,15 +32,24 @@ const LAYER_ANIMATED_CHART_IDS = new Set([
   's14-chart',
   's16-chart',
 ])
+const BACKGROUND_BOUND_CUE_IDS = new Set(['s17-chart'])
 const RAIN_SCENE_ID = 7
 const CROSSFADE_SCENE_ID = 7
 const DELAYED_FOREGROUND_SCENE_ID = 3
-const DELAYED_FOREGROUND_REVEAL_CAMERA_PROGRESS = 0.52
-const DELAYED_FOREGROUND_REVEAL_DURATION = 0.28
-const BOAT_HIDDEN_SCENE_ID = 16
-const WINDOW_SCENE_CAMERA_END_PROGRESS = 0.3
-const IMMEDIATE_EXTERIOR_SCENE_ID = 17
-const IMMEDIATE_EXTERIOR_PREPARE_LEAD_SECONDS = 0.03
+const SCENE_03_SOURCE_WIDTH = 8588
+const SCENE_03_LATER_COPY_LEFT_X = 2054 * 2
+const SCENE_03_CHANGED_CONTENT_RIGHT_X = 6973
+const SCENE_03_GROUP_CENTER_X = (
+  SCENE_03_LATER_COPY_LEFT_X + SCENE_03_CHANGED_CONTENT_RIGHT_X
+) / 2 / SCENE_03_SOURCE_WIDTH
+const SCENE_03_CAMERA_DURATION = 3.12
+const SCENE_03_PAN_IN_DURATION = 0.8
+const SCENE_03_ORIGINAL_HOLD_DURATION = 0.35
+const SCENE_03_MORPH_DURATION = 0.36
+const SCENE_03_CHANGED_HOLD_DURATION = 0.75
+const SCENE_03_PAN_OUT_DURATION = 0.86
+const WINDOW_PORTAL_SCENE_ID = 16
+const WINDOW_SCENE_CAMERA_END_PROGRESS = 0
 const ENDING_ENTRY_DURATION = 0.72
 const ENDING_START_HOLD_DURATION = 0.42
 const ENDING_SCROLL_DURATION = 3.4
@@ -63,6 +72,10 @@ type SceneSlotProps = {
   index: number
   layer: 'background' | 'foreground'
   activeScene: number
+}
+
+function isSceneInAssetWindow(sceneIndex: number, activeScene: number) {
+  return Math.abs(sceneIndex - activeScene) <= ASSET_WINDOW_RADIUS
 }
 
 function ChronicleRain() {
@@ -117,15 +130,23 @@ function ChronicleEnding() {
 }
 
 function SceneSlot({ scene, index, layer, activeScene }: SceneSlotProps) {
-  const isNearViewport = Math.abs(index - activeScene) <= ACTIVE_ASSET_RADIUS
+  const isInAssetWindow = isSceneInAssetWindow(index, activeScene)
   const fallbackSource = layer === 'foreground' ? scene.foreground : scene.background
   const stateSources = scene.states
-    ?.map((state) => ({ id: state.id, source: state[layer] }))
-    .filter((state): state is { id: '00' | '01'; source: string } => Boolean(state.source))
+    ?.flatMap((state) => {
+      const source = state[layer]
+      if (!source) return []
+
+      return [{
+        id: state.id,
+        source,
+        crop: layer === 'foreground' ? state.foregroundCrop : undefined,
+      }]
+    })
   const sources = stateSources?.length
     ? stateSources
     : fallbackSource
-      ? [{ id: undefined, source: fallbackSource }]
+      ? [{ id: undefined, source: fallbackSource, crop: undefined }]
       : []
 
   return (
@@ -136,16 +157,26 @@ function SceneSlot({ scene, index, layer, activeScene }: SceneSlotProps) {
       data-scene-kind={scene.kind}
       style={{ '--scene-ratio': scene.sourceWidth / 1620 } as CSSProperties}
     >
-      {sources.map(({ id, source }) => (
+      {sources.map(({ id, source, crop }) => (
         <img
           className={id ? 'chronicle-track-state' : undefined}
-          src={isNearViewport ? source : undefined}
+          src={isInAssetWindow ? source : undefined}
           data-src={source}
           data-state={id}
+          data-cropped={crop ? 'true' : undefined}
           alt=""
           draggable={false}
           decoding="async"
           key={id ?? source}
+          style={crop
+            ? {
+                inset: 'auto',
+                left: `${(crop.x / crop.canvasWidth) * 100}%`,
+                top: `${(crop.y / crop.canvasHeight) * 100}%`,
+                width: `${(crop.width / crop.canvasWidth) * 100}%`,
+                height: `${(crop.height / crop.canvasHeight) * 100}%`,
+              }
+            : undefined}
         />
       ))}
     </div>
@@ -170,14 +201,16 @@ function SceneContent({
   index,
   activeScene,
   chartSvgMarkup,
+  backgroundBound,
 }: {
   scene: ChronicleScene
   index: number
   activeScene: number
   chartSvgMarkup: Readonly<Record<string, string>>
+  backgroundBound: boolean
 }) {
   const manifest = sceneCueManifests[index]
-  const isNearViewport = Math.abs(index - activeScene) <= ACTIVE_ASSET_RADIUS
+  const isInAssetWindow = isSceneInAssetWindow(index, activeScene)
   const logicalWidth = scene.sourceWidth / 2
 
   return (
@@ -187,7 +220,10 @@ function SceneContent({
       data-scene={index}
       style={{ '--scene-ratio': scene.sourceWidth / 1620 } as CSSProperties}
     >
-      {manifest.cues.filter((item) => item.kind !== 'source').map((item) => {
+      {manifest.cues.filter((item) => (
+        item.kind !== 'source'
+        && BACKGROUND_BOUND_CUE_IDS.has(item.id) === backgroundBound
+      )).map((item) => {
         const x = normalizeCueValue(item.x, manifest.frameHeight)
         const y = normalizeCueValue(item.y, manifest.frameHeight)
         const width = normalizeCueValue(item.width, manifest.frameHeight)
@@ -217,7 +253,13 @@ function SceneContent({
                 dangerouslySetInnerHTML={{ __html: chartSvgMarkup[item.id] }}
               />
             ) : item.svgAsset ? (
-              <img src={item.svgAsset} alt="" draggable={false} />
+              <img
+                src={isInAssetWindow ? item.svgAsset : undefined}
+                data-src={item.svgAsset}
+                alt=""
+                draggable={false}
+                decoding="async"
+              />
             ) : item.id === 's08-copy' ? (
               <div className="chronicle-night-copy">
                 <span>在这样的境遇下，消沉的赵大春回到了家乡。</span>
@@ -226,7 +268,7 @@ function SceneContent({
               </div>
             ) : (
               <img
-                src={isNearViewport ? item.asset : undefined}
+                src={isInAssetWindow ? item.asset : undefined}
                 data-src={item.asset}
                 alt=""
                 draggable={false}
@@ -246,17 +288,20 @@ function TrackSurface({
   surface,
   activeScene,
   chartSvgMarkup,
+  backgroundBound = false,
 }: {
   track: NarrativeTrack
   surface: TrackSurfaceKind
   activeScene: number
   chartSvgMarkup: Readonly<Record<string, string>>
+  backgroundBound?: boolean
 }) {
   return (
     <div
       className={`chronicle-track-surface chronicle-track-surface--${track} chronicle-track-surface--${surface}`}
       data-track={track}
       data-surface={surface}
+      data-active={chronicleScenes[activeScene]?.track === track ? 'true' : undefined}
     >
       {chronicleScenes.map((scene, index) => {
         if (scene.track !== track) return null
@@ -268,6 +313,7 @@ function TrackSurface({
               index={index}
               activeScene={activeScene}
               chartSvgMarkup={chartSvgMarkup}
+              backgroundBound={backgroundBound}
             />
           )
         }
@@ -307,6 +353,77 @@ function getTrackX(
   const overflow = Math.max(0, slot.offsetWidth - viewport.clientWidth)
   const centered = Math.max(0, (viewport.clientWidth - slot.offsetWidth) / 2)
   return -slot.offsetLeft + centered - overflow * progress
+}
+
+function getScene03GroupCenterProgress(
+  root: HTMLElement,
+  viewport: HTMLElement,
+  sceneIndex: number,
+) {
+  const slot = root.querySelector<HTMLElement>(
+    `.chronicle-track-slot[data-scene="${sceneIndex}"]`,
+  )
+  if (!slot) return 0
+
+  const overflow = Math.max(0, slot.offsetWidth - viewport.clientWidth)
+  if (overflow === 0) return 0
+
+  const groupCenterX = slot.offsetWidth * SCENE_03_GROUP_CENTER_X
+  return gsap.utils.clamp(
+    0,
+    1,
+    (groupCenterX - viewport.clientWidth / 2) / overflow,
+  )
+}
+
+function getScene03PhaseRatios() {
+  return {
+    panInEnd: SCENE_03_PAN_IN_DURATION / SCENE_03_CAMERA_DURATION,
+    morphStart: (
+      SCENE_03_PAN_IN_DURATION + SCENE_03_ORIGINAL_HOLD_DURATION
+    ) / SCENE_03_CAMERA_DURATION,
+    morphEnd: (
+      SCENE_03_PAN_IN_DURATION
+      + SCENE_03_ORIGINAL_HOLD_DURATION
+      + SCENE_03_MORPH_DURATION
+    ) / SCENE_03_CAMERA_DURATION,
+    panOutStart: (
+      SCENE_03_PAN_IN_DURATION
+      + SCENE_03_ORIGINAL_HOLD_DURATION
+      + SCENE_03_MORPH_DURATION
+      + SCENE_03_CHANGED_HOLD_DURATION
+    ) / SCENE_03_CAMERA_DURATION,
+  }
+}
+
+function getScene03CameraProgress(
+  cameraPhaseProgress: number,
+  centerProgress: number,
+  endProgress: number,
+) {
+  const phases = getScene03PhaseRatios()
+
+  if (cameraPhaseProgress <= phases.panInEnd) {
+    return centerProgress * (
+      cameraPhaseProgress / Math.max(phases.panInEnd, Number.EPSILON)
+    )
+  }
+  if (cameraPhaseProgress <= phases.panOutStart) return centerProgress
+
+  const panOutProgress = (
+    cameraPhaseProgress - phases.panOutStart
+  ) / Math.max(1 - phases.panOutStart, Number.EPSILON)
+  return centerProgress + (endProgress - centerProgress) * panOutProgress
+}
+
+function getScene03MorphProgress(cameraPhaseProgress: number) {
+  const phases = getScene03PhaseRatios()
+  return gsap.utils.clamp(
+    0,
+    1,
+    (cameraPhaseProgress - phases.morphStart)
+      / Math.max(phases.morphEnd - phases.morphStart, Number.EPSILON),
+  )
 }
 
 function getBlackboardHorizontalClip(
@@ -627,6 +744,19 @@ function addTrackTransition(
     root,
   )
 
+  if (
+    scene.id === WINDOW_PORTAL_SCENE_ID
+    && nextScene.id === WINDOW_PORTAL_SCENE_ID + 1
+  ) {
+    timeline.set(exteriorContentLayers, { autoAlpha: 1 }, at)
+    timeline.set(interiorLayers, {
+      autoAlpha: 0,
+      scale: 1,
+      transformOrigin: '50% 46%',
+    }, at)
+    return
+  }
+
   if (scene.transition === 'horizontal') {
     const currentSurfaces = getTrackSurfaces(root, scene.track)
     const nextSurfaces = getTrackSurfaces(root, nextScene.track)
@@ -744,6 +874,20 @@ function readStaticPreview() {
   return { scene, progress }
 }
 
+function readTimelineProbe() {
+  if (!import.meta.env.DEV) return null
+
+  const params = new URLSearchParams(window.location.search)
+  if (params.get('timelineProbe') !== '1') return null
+
+  const scene = Math.min(
+    chronicleScenes.length - 1,
+    Math.max(0, Number(params.get('scene') ?? 1) - 1),
+  )
+  const progress = Math.min(1, Math.max(0, Number(params.get('progress') ?? 0)))
+  return { scene, progress }
+}
+
 function getCameraProgress(scene: ChronicleScene, localProgress: number) {
   const cameraStart = scene.timing.contentRevealRatio + scene.timing.contentHoldRatio
   if (localProgress <= cameraStart) return 0
@@ -756,7 +900,7 @@ function getCameraEndProgress(
   motion: CoverMotionConfig,
 ) {
   if (scene.id === 1) return motion.scene1CameraEndProgress
-  if (scene.id === BOAT_HIDDEN_SCENE_ID) {
+  if (scene.id === WINDOW_PORTAL_SCENE_ID) {
     return WINDOW_SCENE_CAMERA_END_PROGRESS
   }
   return 1
@@ -767,12 +911,77 @@ function getCueProgress(scene: ChronicleScene, localProgress: number) {
   return Math.min(1, Math.max(0, localProgress / scene.timing.contentRevealRatio))
 }
 
+function roundDebugValue(value: number, digits = 4) {
+  if (!Number.isFinite(value)) return null
+  return Number(value.toFixed(digits))
+}
+
+function getDebugRect(element: Element, frameRect?: DOMRect) {
+  const rect = element.getBoundingClientRect()
+
+  return {
+    x: roundDebugValue(rect.x, 2),
+    y: roundDebugValue(rect.y, 2),
+    width: roundDebugValue(rect.width, 2),
+    height: roundDebugValue(rect.height, 2),
+    right: roundDebugValue(rect.right, 2),
+    bottom: roundDebugValue(rect.bottom, 2),
+    frameX: frameRect ? roundDebugValue(rect.x - frameRect.x, 2) : null,
+    frameY: frameRect ? roundDebugValue(rect.y - frameRect.y, 2) : null,
+  }
+}
+
+function describeDebugElement(element: Element, frameRect?: DOMRect) {
+  const htmlElement = element as HTMLElement
+  const style = getComputedStyle(htmlElement)
+  const slot = htmlElement.closest<HTMLElement>('[data-scene]')
+  const worldLayer = htmlElement.closest<HTMLElement>('.chronicle-world-layer')
+
+  return {
+    tag: element.tagName.toLowerCase(),
+    className: htmlElement.className,
+    sceneIndex: slot?.dataset.scene ?? null,
+    cue: htmlElement.dataset.cue ?? null,
+    layer: htmlElement.dataset.layer
+      ?? htmlElement.dataset.surface
+      ?? worldLayer?.className
+      ?? null,
+    opacity: style.opacity,
+    visibility: style.visibility,
+    display: style.display,
+    transform: style.transform,
+    clipPath: style.clipPath,
+    zIndex: style.zIndex,
+    rect: getDebugRect(element, frameRect),
+  }
+}
+
+function getSceneDebugPhase(scene: ChronicleScene, localProgress: number) {
+  const revealEnd = scene.timing.contentRevealRatio
+  const holdEnd = revealEnd + scene.timing.contentHoldRatio
+  const cameraEnd = holdEnd + scene.timing.cameraRatio
+
+  if (localProgress < revealEnd) return 'content-reveal'
+  if (localProgress < holdEnd) return 'content-hold'
+  if (localProgress < cameraEnd) return 'camera'
+  return 'transition'
+}
+
+type ChronicleDebugWindow = Window & {
+  __chronicleDebugSnapshot?: unknown
+  __chronicleInspectPoint?: (x: number, y: number) => unknown
+}
+
 export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
   const rootRef = useRef<HTMLElement>(null)
   const stageRef = useRef<HTMLDivElement>(null)
   const frameRef = useRef<HTMLDivElement>(null)
   const bottomBackdropRef = useRef<HTMLDivElement>(null)
+  const timelineRef = useRef<gsap.core.Timeline | null>(null)
+  const scrollTriggerRef = useRef<ScrollTrigger | null>(null)
+  const sceneStartsRef = useRef<number[]>([])
   const staticPreview = useMemo(() => readStaticPreview(), [])
+  const timelineProbe = useMemo(() => readTimelineProbe(), [])
   const isMotionDebug = useMemo(() => {
     const params = new URLSearchParams(window.location.search)
     return import.meta.env.DEV && params.get('debugMotion') === '1'
@@ -786,8 +995,208 @@ export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
     [],
   )
   const [chartSvgMarkup, setChartSvgMarkup] = useState<Readonly<Record<string, string>> | null>(null)
-  const activeSceneRef = useRef(staticPreview?.scene ?? 0)
-  const [activeScene, setActiveScene] = useState(staticPreview?.scene ?? 0)
+  const initialScene = staticPreview?.scene ?? timelineProbe?.scene ?? 0
+  const activeSceneRef = useRef(initialScene)
+  const [activeScene, setActiveScene] = useState(initialScene)
+
+  const jumpToSceneStart = (sceneNumber: number) => {
+    const timeline = timelineRef.current
+    const trigger = scrollTriggerRef.current
+    const sceneIndex = sceneNumber - 1
+    const sceneStart = sceneStartsRef.current[sceneIndex]
+    if (!timeline || !trigger || sceneStart === undefined) return
+
+    const timelineProgress = sceneStart / timeline.duration()
+    const targetScrollY = Math.ceil(
+      trigger.start + (trigger.end - trigger.start) * timelineProgress,
+    )
+
+    window.scrollTo({ top: targetScrollY, behavior: 'auto' })
+    requestAnimationFrame(() => ScrollTrigger.update())
+    console.info(`[Chronicle debug] 已跳转到第 ${sceneNumber} 屏`, {
+      sceneId: chronicleScenes[sceneIndex].id,
+      sceneStart,
+      timelineProgress,
+      targetScrollY,
+    })
+  }
+
+  const printDebugSnapshot = () => {
+    const root = rootRef.current
+    const frame = frameRef.current
+    const timeline = timelineRef.current
+    const trigger = scrollTriggerRef.current
+    if (!root || !frame) return
+
+    const frameRect = frame.getBoundingClientRect()
+    const sceneIndex = activeSceneRef.current
+    const scene = chronicleScenes[sceneIndex]
+    const sceneStart = sceneStartsRef.current[sceneIndex]
+    const timelineTime = timeline?.time() ?? null
+    const sceneLocalTime = timelineTime !== null && sceneStart !== undefined
+      ? Math.min(scene.duration, Math.max(0, timelineTime - sceneStart))
+      : staticPreview
+        ? staticPreview.progress * scene.duration
+        : 0
+    const sceneLocalProgress = scene.duration > 0
+      ? sceneLocalTime / scene.duration
+      : 0
+    const cameraPhaseProgress = getCameraProgress(scene, sceneLocalProgress)
+    const sceneRange = new Set([
+      Math.max(0, sceneIndex - 1),
+      sceneIndex,
+      Math.min(chronicleScenes.length - 1, sceneIndex + 1),
+    ])
+
+    const layers = Array.from(
+      root.querySelectorAll<HTMLElement>('.chronicle-world-layer'),
+      (layer) => {
+        const style = getComputedStyle(layer)
+        const surfaces = Array.from(
+          layer.querySelectorAll<HTMLElement>('.chronicle-track-surface'),
+          (surface) => ({
+            track: surface.dataset.track ?? null,
+            surface: surface.dataset.surface ?? null,
+            x: gsap.getProperty(surface, 'x'),
+            opacity: getComputedStyle(surface).opacity,
+            transform: getComputedStyle(surface).transform,
+            rect: getDebugRect(surface, frameRect),
+          }),
+        )
+
+        return {
+          className: layer.className,
+          opacity: style.opacity,
+          visibility: style.visibility,
+          clipPath: style.clipPath,
+          transform: style.transform,
+          zIndex: style.zIndex,
+          surfaces,
+        }
+      },
+    )
+
+    const cues = Array.from(root.querySelectorAll<HTMLElement>('.chronicle-cue'))
+      .filter((cue) => {
+        const cueScene = Number(cue.closest<HTMLElement>('[data-scene]')?.dataset.scene)
+        return sceneRange.has(cueScene)
+      })
+      .map((cue) => describeDebugElement(cue, frameRect))
+
+    const images = Array.from(root.querySelectorAll<HTMLImageElement>('[data-scene] img'))
+      .filter((image) => {
+        const imageScene = Number(image.closest<HTMLElement>('[data-scene]')?.dataset.scene)
+        return sceneRange.has(imageScene)
+      })
+      .map((image) => ({
+        ...describeDebugElement(image, frameRect),
+        src: image.currentSrc || image.dataset.src || null,
+        complete: image.complete,
+        naturalWidth: image.naturalWidth,
+        naturalHeight: image.naturalHeight,
+      }))
+
+    const inspectPoint = (x: number, y: number) => {
+      const stack = document.elementsFromPoint(x, y)
+        .map((element) => describeDebugElement(element, frameRect))
+      console.groupCollapsed(`[Chronicle point] x=${x}, y=${y}`)
+      console.table(stack)
+      console.groupEnd()
+      return stack
+    }
+
+    const snapshot = {
+      capturedAt: new Date().toISOString(),
+      url: window.location.href,
+      environment: {
+        viewport: {
+          width: window.innerWidth,
+          height: window.innerHeight,
+          devicePixelRatio: window.devicePixelRatio,
+        },
+        visualViewport: window.visualViewport
+          ? {
+              width: roundDebugValue(window.visualViewport.width, 2),
+              height: roundDebugValue(window.visualViewport.height, 2),
+              scale: window.visualViewport.scale,
+              offsetLeft: window.visualViewport.offsetLeft,
+              offsetTop: window.visualViewport.offsetTop,
+            }
+          : null,
+        scrollY: roundDebugValue(window.scrollY, 2),
+        scrollHeight: document.documentElement.scrollHeight,
+        reducedMotion,
+        userAgent: navigator.userAgent,
+      },
+      scrollTrigger: trigger
+        ? {
+            start: roundDebugValue(trigger.start, 2),
+            end: roundDebugValue(trigger.end, 2),
+            progress: roundDebugValue(trigger.progress, 6),
+            direction: trigger.direction,
+            velocity: roundDebugValue(trigger.getVelocity(), 2),
+            isActive: trigger.isActive,
+          }
+        : null,
+      timeline: timeline
+        ? {
+            time: roundDebugValue(timeline.time(), 6),
+            duration: roundDebugValue(timeline.duration(), 6),
+            progress: roundDebugValue(timeline.progress(), 6),
+          }
+        : null,
+      scene: {
+        index: sceneIndex,
+        number: sceneIndex + 1,
+        id: scene.id,
+        title: scene.title,
+        track: scene.track,
+        transition: scene.transition,
+        duration: scene.duration,
+        startTime: sceneStart ?? null,
+        localTime: roundDebugValue(sceneLocalTime, 6),
+        localProgress: roundDebugValue(sceneLocalProgress, 6),
+        phase: getSceneDebugPhase(scene, sceneLocalProgress),
+        timing: scene.timing,
+        cameraPhaseProgress: roundDebugValue(cameraPhaseProgress, 6),
+        cameraTrackProgress: roundDebugValue(
+          cameraPhaseProgress * getCameraEndProgress(scene, coverMotion),
+          6,
+        ),
+      },
+      frame: getDebugRect(frame),
+      layers,
+      cues,
+      images,
+      centerStack: inspectPoint(
+        Math.round(frameRect.left + frameRect.width / 2),
+        Math.round(frameRect.top + frameRect.height / 2),
+      ),
+    }
+
+    const debugWindow = window as ChronicleDebugWindow
+    debugWindow.__chronicleDebugSnapshot = snapshot
+    debugWindow.__chronicleInspectPoint = inspectPoint
+
+    console.group(`[Chronicle debug] Scene_${String(scene.id).padStart(2, '0')} · ${snapshot.scene.phase}`)
+    console.log('完整快照', snapshot)
+    console.table(layers.flatMap((layer) => (
+      layer.surfaces.map((surface) => ({
+        worldLayer: layer.className,
+        layerOpacity: layer.opacity,
+        layerVisibility: layer.visibility,
+        ...surface,
+      }))
+    )))
+    console.table(cues)
+    console.table(images)
+    console.info('坐标检查：__chronicleInspectPoint(x, y)')
+    console.groupEnd()
+
+    navigator.clipboard?.writeText(JSON.stringify(snapshot, null, 2)).catch(() => {
+      // Console output remains available when clipboard permission is denied.
+    })
+  }
 
   useEffect(() => {
     let cancelled = false
@@ -886,7 +1295,10 @@ export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
       gsap.set(rainLayer, { autoAlpha: 0 })
       gsap.set(crossfadeState00, { autoAlpha: 1 })
       gsap.set(crossfadeState01, { autoAlpha: 0 })
-      gsap.set(delayedForegroundState01, { autoAlpha: 0 })
+      gsap.set(delayedForegroundState01, {
+        autoAlpha: 0,
+        scale: reducedMotion ? 1 : 0.985,
+      })
       gsap.set(interiorSurfaces, {
         x: () => getTrackX(root, viewport, firstInterior, 0),
       })
@@ -925,6 +1337,15 @@ export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
           `.chronicle-track-slot--content[data-scene="${staticPreview.scene}"] .chronicle-cue[data-cue-mode="scroll"]`,
         )
         const cueProgress = getCueProgress(scene, staticPreview.progress)
+        const cameraPhaseProgress = getCameraProgress(scene, staticPreview.progress)
+        const cameraEndProgress = getCameraEndProgress(scene, coverMotion)
+        const cameraProgress = scene.id === DELAYED_FOREGROUND_SCENE_ID
+          ? getScene03CameraProgress(
+              cameraPhaseProgress,
+              getScene03GroupCenterProgress(root, viewport, staticPreview.scene),
+              cameraEndProgress,
+            )
+          : cameraPhaseProgress * cameraEndProgress
         const skin = root.querySelector<HTMLElement>(
           `[data-boat-skin="${scene.boatSkin}"]`,
         )
@@ -934,8 +1355,7 @@ export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
             root,
             viewport,
             staticPreview.scene,
-            getCameraProgress(scene, staticPreview.progress)
-              * getCameraEndProgress(scene, coverMotion),
+            cameraProgress,
           ),
         })
         gsap.set(contentCues, {
@@ -955,11 +1375,14 @@ export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
         }
 
         if (scene.id === DELAYED_FOREGROUND_SCENE_ID) {
+          const linearMorphProgress = getScene03MorphProgress(cameraPhaseProgress)
+          const morphProgress = reducedMotion
+            ? Number(linearMorphProgress > 0)
+            : 1 - (1 - linearMorphProgress) ** 3
+
           gsap.set(delayedForegroundState01, {
-            autoAlpha: getCameraProgress(scene, staticPreview.progress)
-              >= DELAYED_FOREGROUND_REVEAL_CAMERA_PROGRESS
-              ? 1
-              : 0,
+            autoAlpha: morphProgress,
+            scale: reducedMotion ? 1 : 0.985 + 0.015 * morphProgress,
           })
         }
 
@@ -973,7 +1396,7 @@ export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
           }
         }
 
-        if (scene.id !== BOAT_HIDDEN_SCENE_ID) {
+        if (scene.id !== WINDOW_PORTAL_SCENE_ID) {
           gsap.set(skin, { autoAlpha: 1 })
         }
         gsap.set(rainLayer, { autoAlpha: scene.id === RAIN_SCENE_ID ? 1 : 0 })
@@ -989,7 +1412,7 @@ export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
             ? getBlackboardHorizontalClip(
                 root,
                 viewport,
-                getCameraProgress(scene, staticPreview.progress),
+                cameraProgress,
                 scene4Mask,
               )
             : 'none',
@@ -1037,6 +1460,7 @@ export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
       }
 
       const timeline = gsap.timeline({ defaults: { ease: 'none' } })
+      timelineRef.current = timeline
       let cursor = 0
 
       if (coverLayer && coverPanorama && prefaceMask && prefaceCopy) {
@@ -1116,9 +1540,6 @@ export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
       }
 
       chronicleScenes.forEach((scene, index) => {
-        const sceneContentPrepareAt = scene.id === IMMEDIATE_EXTERIOR_SCENE_ID
-          ? Math.max(0, cursor - IMMEDIATE_EXTERIOR_PREPARE_LEAD_SECONDS)
-          : cursor
         sceneStarts.push(cursor)
         const cues = getSceneCues(root, index)
         const hasBottomDecoration = sceneCueManifests[index].cues.some(
@@ -1142,6 +1563,53 @@ export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
         const transitionAt = cameraAt + cameraDuration
         const nextScene = chronicleScenes[index + 1]
         const cameraEndProgress = getCameraEndProgress(scene, coverMotion)
+        const scene03Timing = scene.id === DELAYED_FOREGROUND_SCENE_ID
+          ? (() => {
+              const durationScale = cameraDuration / SCENE_03_CAMERA_DURATION
+              const panInDuration = SCENE_03_PAN_IN_DURATION * durationScale
+              const originalHoldDuration = SCENE_03_ORIGINAL_HOLD_DURATION * durationScale
+              const morphDuration = SCENE_03_MORPH_DURATION * durationScale
+              const changedHoldDuration = SCENE_03_CHANGED_HOLD_DURATION * durationScale
+              const panOutDuration = SCENE_03_PAN_OUT_DURATION * durationScale
+              const centeredAt = cameraAt + panInDuration
+              const morphAt = centeredAt + originalHoldDuration
+              const morphCompleteAt = morphAt + morphDuration
+              const resumeAt = morphCompleteAt + changedHoldDuration
+
+              return {
+                centerProgress: getScene03GroupCenterProgress(root, viewport, index),
+                panInDuration,
+                morphDuration,
+                panOutDuration,
+                centeredAt,
+                morphAt,
+                morphCompleteAt,
+                resumeAt,
+              }
+            })()
+          : null
+        const getCameraTimelineAtProgress = (progress: number) => {
+          if (!scene03Timing) return cameraAt + cameraDuration * progress
+
+          const { centerProgress } = scene03Timing
+          if (progress <= centerProgress) {
+            return cameraAt + scene03Timing.panInDuration * (
+              progress / Math.max(centerProgress, Number.EPSILON)
+            )
+          }
+
+          return scene03Timing.resumeAt + scene03Timing.panOutDuration * (
+            (progress - centerProgress)
+            / Math.max(cameraEndProgress - centerProgress, Number.EPSILON)
+          )
+        }
+
+        if (scene03Timing) {
+          timeline.addLabel('scene03:centered', scene03Timing.centeredAt)
+          timeline.addLabel('scene03:morph-start', scene03Timing.morphAt)
+          timeline.addLabel('scene03:morph-complete', scene03Timing.morphCompleteAt)
+          timeline.addLabel('scene03:resume', scene03Timing.resumeAt)
+        }
 
         if (index === 0) {
           if (reducedMotion) {
@@ -1189,25 +1657,22 @@ export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
         const delayedSceneCues = cueEntries.filter(({ progress }) => progress > 0.001)
 
         if (hasBottomDecoration) {
-          const isImmediateEntry = scene.id === IMMEDIATE_EXTERIOR_SCENE_ID
           const chartEntry = cueEntries.find(
             ({ cue }) => cue.dataset.cueKind === 'chart',
           )
           const chartLifecycleStart = chartEntry && chartEntry.progress > 0.001
-            ? cameraAt + cameraDuration * chartEntry.progress
+            ? getCameraTimelineAtProgress(chartEntry.progress)
             : cursor
-          const noteEnterAt = isImmediateEntry
-            ? cursor
-            : Math.max(
-                0,
-                chartLifecycleStart + BOTTOM_NOTE_LIFECYCLE_OFFSET_SECONDS,
-              )
+          const noteEnterAt = Math.max(
+            0,
+            chartLifecycleStart + BOTTOM_NOTE_LIFECYCLE_OFFSET_SECONDS,
+          )
           const noteExitAt = Math.max(
             noteEnterAt + BOTTOM_NOTE_TRANSITION_DURATION_SECONDS,
             transitionAt + BOTTOM_NOTE_LIFECYCLE_OFFSET_SECONDS,
           )
 
-          if (reducedMotion || isImmediateEntry) {
+          if (reducedMotion) {
             timeline.set(bottomBackdrop, { autoAlpha: 1, yPercent: 0 }, noteEnterAt)
             timeline.set(bottomBackdrop, { autoAlpha: 0, yPercent: 0 }, noteExitAt)
           } else {
@@ -1229,7 +1694,7 @@ export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
         addCueAnimations(
           timeline,
           openingCues,
-          sceneContentPrepareAt,
+          cursor,
           revealDuration,
           reducedMotion,
         )
@@ -1238,32 +1703,55 @@ export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
           addCueAnimations(
             timeline,
             [cue],
-            cameraAt + cameraDuration * progress,
+            getCameraTimelineAtProgress(progress),
             Math.min(revealDuration, cameraDuration * DELAYED_CUE_REVEAL_CAMERA_RATIO),
             reducedMotion,
           )
         })
 
-        if (scene.id === DELAYED_FOREGROUND_SCENE_ID) {
-          const foregroundRevealAt = cameraAt
-            + cameraDuration * DELAYED_FOREGROUND_REVEAL_CAMERA_PROGRESS
-
+        if (scene03Timing) {
           if (reducedMotion) {
-            timeline.set(delayedForegroundState01, { autoAlpha: 1 }, foregroundRevealAt)
-          } else {
-            timeline.to(delayedForegroundState01, {
+            timeline.set(delayedForegroundState01, {
               autoAlpha: 1,
-              duration: DELAYED_FOREGROUND_REVEAL_DURATION,
+              scale: 1,
+            }, 'scene03:morph-start')
+          } else {
+            timeline.fromTo(delayedForegroundState01, {
+              autoAlpha: 0,
+              scale: 0.985,
+            }, {
+              autoAlpha: 1,
+              scale: 1,
+              duration: scene03Timing.morphDuration,
               ease: 'power2.out',
-            }, foregroundRevealAt)
+              immediateRender: false,
+            }, 'scene03:morph-start')
           }
         }
 
-        timeline.to(sceneSurfaces, {
-          x: () => getTrackX(root, viewport, index, cameraEndProgress),
-          duration: cameraDuration,
-          ease: 'none',
-        }, cameraAt)
+        if (scene03Timing) {
+          timeline.to(sceneSurfaces, {
+            x: () => getTrackX(
+              root,
+              viewport,
+              index,
+              scene03Timing.centerProgress,
+            ),
+            duration: scene03Timing.panInDuration,
+            ease: 'none',
+          }, cameraAt)
+          timeline.to(sceneSurfaces, {
+            x: () => getTrackX(root, viewport, index, cameraEndProgress),
+            duration: scene03Timing.panOutDuration,
+            ease: 'none',
+          }, 'scene03:resume')
+        } else {
+          timeline.to(sceneSurfaces, {
+            x: () => getTrackX(root, viewport, index, cameraEndProgress),
+            duration: cameraDuration,
+            ease: 'none',
+          }, cameraAt)
+        }
 
         const currentSkin = root.querySelector<HTMLElement>(
           `[data-boat-skin="${scene.boatSkin}"]`,
@@ -1274,9 +1762,9 @@ export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
 
         timeline.set(boat, {
           y: () => viewport.clientHeight * (getBoatYPercent(scene.id) / 100),
-        }, sceneContentPrepareAt)
+        }, cursor)
 
-        if (scene.id === BOAT_HIDDEN_SCENE_ID) {
+        if (scene.id === WINDOW_PORTAL_SCENE_ID) {
           timeline.set(boatSkins, { autoAlpha: 0 }, cursor)
         } else if (index === BLACKBOARD_SCENE_INDEX) {
           timeline.set(boatViewport, {
@@ -1307,8 +1795,8 @@ export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
           timeline.set(currentSkin, { autoAlpha: 1 }, cursor)
         } else if (previousSkin !== currentSkin) {
           if (revealDuration <= 0) {
-            timeline.set(previousSkin, { autoAlpha: 0 }, sceneContentPrepareAt)
-            timeline.set(currentSkin, { autoAlpha: 1 }, sceneContentPrepareAt)
+            timeline.set(previousSkin, { autoAlpha: 0 }, cursor)
+            timeline.set(currentSkin, { autoAlpha: 1 }, cursor)
           } else {
             timeline.to(previousSkin, { autoAlpha: 0, duration: revealDuration * 0.3 }, cursor)
             timeline.to(currentSkin, { autoAlpha: 1, duration: revealDuration * 0.3 }, cursor)
@@ -1323,7 +1811,7 @@ export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
         }
 
         if (nextScene) {
-          if (nextScene.id === BOAT_HIDDEN_SCENE_ID) {
+          if (nextScene.id === WINDOW_PORTAL_SCENE_ID) {
             timeline.to(currentSkin, {
               autoAlpha: 0,
               duration: transitionDuration * 0.2,
@@ -1349,15 +1837,15 @@ export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
             }
           }
 
-          // Reposition while Scene 04's opaque blackboard fully covers the
-          // exterior. Doing this when the Scene 05 transition starts can expose
-          // the exterior track's instantaneous jump through the entering window.
+          // Hide the exterior before repositioning it under Scene 04. It is
+          // restored only while Scene 05's window enters the viewport.
           if (index === BLACKBOARD_SCENE_INDEX) {
             const hospitalExterior = chronicleScenes[HOSPITAL_SCENE_INDEX + 1]
             const hospitalExteriorSurfaces = getTrackSurfaces(
               root,
               hospitalExterior.track,
             )
+            timeline.set(exteriorBackdropLayers, { autoAlpha: 0 }, cursor)
             timeline.set(hospitalExteriorSurfaces, {
               x: () => getTrackX(
                 root,
@@ -1367,14 +1855,17 @@ export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
               ),
             }, cursor)
 
-            if (!reducedMotion) {
-              timeline.fromTo(exteriorBackdropLayers, {
-                autoAlpha: 0,
-              }, {
+            if (reducedMotion) {
+              timeline.set(
+                exteriorBackdropLayers,
+                { autoAlpha: 1 },
+                transitionAt + transitionDuration,
+              )
+            } else {
+              timeline.to(exteriorBackdropLayers, {
                 autoAlpha: 1,
                 duration: transitionDuration,
                 ease: 'power1.inOut',
-                immediateRender: false,
               }, transitionAt)
             }
           }
@@ -1459,7 +1950,62 @@ export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
         timeline.set(endingLayer, { autoAlpha: 1 }, cursor)
       }
 
-      ScrollTrigger.create({
+      sceneStartsRef.current = sceneStarts
+      if (timelineProbe) {
+        const probeScene = chronicleScenes[timelineProbe.scene]
+        const probeTime = sceneStarts[timelineProbe.scene]
+          + probeScene.duration * timelineProbe.progress
+
+        timeline.pause(probeTime, true)
+        activeSceneRef.current = timelineProbe.scene
+        setActiveScene(timelineProbe.scene)
+
+        const probeOutput = document.createElement('output')
+        probeOutput.id = 'chronicle-timeline-probe'
+        probeOutput.hidden = true
+        probeOutput.textContent = JSON.stringify({
+          scene: probeScene.id,
+          progress: timelineProbe.progress,
+          probeTime,
+          timelineDuration: timeline.duration(),
+          layers: Array.from(
+            root.querySelectorAll<HTMLElement>('.chronicle-world-layer'),
+            (layer) => {
+              const style = getComputedStyle(layer)
+              return {
+                className: layer.className,
+                opacity: style.opacity,
+                visibility: style.visibility,
+                transform: style.transform,
+              }
+            },
+          ),
+          surfaces: Array.from(
+            root.querySelectorAll<HTMLElement>('.chronicle-track-surface'),
+            (surface) => ({
+              track: surface.dataset.track,
+              surface: surface.dataset.surface,
+              x: gsap.getProperty(surface, 'x'),
+              opacity: getComputedStyle(surface).opacity,
+            }),
+          ),
+          images: Array.from(
+            root.querySelectorAll<HTMLImageElement>(
+              `.chronicle-track-slot[data-scene="${timelineProbe.scene}"] img`,
+            ),
+            (image) => ({
+              src: image.currentSrc || image.dataset.src,
+              complete: image.complete,
+              naturalWidth: image.naturalWidth,
+              opacity: getComputedStyle(image).opacity,
+            }),
+          ),
+        })
+        root.append(probeOutput)
+        return
+      }
+
+      scrollTriggerRef.current = ScrollTrigger.create({
         animation: timeline,
         trigger: root,
         start: 'top top',
@@ -1487,8 +2033,20 @@ export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
       })
     }, root)
 
-    return () => context.revert()
-  }, [chartSvgMarkup, coverMotion, reducedMotion, scene4Mask, staticPreview])
+    return () => {
+      context.revert()
+      timelineRef.current = null
+      scrollTriggerRef.current = null
+      sceneStartsRef.current = []
+    }
+  }, [
+    chartSvgMarkup,
+    coverMotion,
+    reducedMotion,
+    scene4Mask,
+    staticPreview,
+    timelineProbe,
+  ])
 
   return (
     <section
@@ -1507,6 +2065,9 @@ export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
           </div>
           <div className="chronicle-world-layer chronicle-world-layer--interior-background" aria-hidden="true">
             <TrackSurface track="interior" surface="background" activeScene={activeScene} chartSvgMarkup={chartSvgMarkup ?? {}} />
+          </div>
+          <div className="chronicle-world-layer chronicle-world-layer--exterior-content chronicle-world-layer--background-bound-content" aria-hidden="true">
+            <TrackSurface track="exterior" surface="content" activeScene={activeScene} chartSvgMarkup={chartSvgMarkup ?? {}} backgroundBound />
           </div>
           <ChronicleBoat />
           <div className="chronicle-world-layer chronicle-world-layer--exterior-foreground" aria-hidden="true">
@@ -1543,9 +2104,47 @@ export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
         <CoverMotionDebugPanel value={coverMotion} onChange={setCoverMotion} />
       )}
       {import.meta.env.DEV && (
-        <div className="screen-debug" aria-hidden="true">
+        <div className="screen-debug" aria-label="滚动场景调试">
           第 {activeScene + 1} / {chronicleScenes.length} 屏
           <span>Scene_{String(chronicleScenes[activeScene].id).padStart(2, '0')}</span>
+          <input
+            className="screen-debug__jump"
+            type="number"
+            min={1}
+            max={chronicleScenes.length}
+            inputMode="numeric"
+            placeholder="跳屏"
+            aria-label={`跳转到指定屏，范围 1 到 ${chronicleScenes.length}`}
+            onChange={(event) => event.currentTarget.setCustomValidity('')}
+            onKeyDown={(event) => {
+              if (event.key !== 'Enter') return
+              event.preventDefault()
+
+              const sceneNumber = event.currentTarget.valueAsNumber
+              if (
+                !Number.isInteger(sceneNumber)
+                || sceneNumber < 1
+                || sceneNumber > chronicleScenes.length
+              ) {
+                event.currentTarget.setCustomValidity(
+                  `请输入 1–${chronicleScenes.length} 之间的整数`,
+                )
+                event.currentTarget.reportValidity()
+                return
+              }
+
+              event.currentTarget.setCustomValidity('')
+              jumpToSceneStart(sceneNumber)
+              event.currentTarget.blur()
+            }}
+          />
+          <button
+            className="screen-debug__button"
+            type="button"
+            onClick={printDebugSnapshot}
+          >
+            打印状态
+          </button>
         </div>
       )}
     </section>

@@ -91,9 +91,9 @@ const cue = (
 
 export const sceneCueManifests: readonly SceneCueManifest[] = [
   { figmaFrameId: '15:7', frameHeight: 822, cues: [
-    cue('s01-title', '15:61', 'title', 104, 79, 290, 64, {
+    cue('s01-title', '15:61', 'title', 104, 79, 290, 40, {
       assetId: 's01-copy',
-      crop: { x: 0, y: 0, width: 290, height: 64, sourceWidth: 290, sourceHeight: 367 },
+      crop: { x: 0, y: 0, width: 290, height: 40, sourceWidth: 290, sourceHeight: 367 },
     }),
     cue('s01-copy', '15:61', 'copy', 104, 153, 290, 293, {
       crop: { x: 0, y: 74, width: 290, height: 293, sourceWidth: 290, sourceHeight: 367 },

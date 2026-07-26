@@ -59,8 +59,9 @@ const boatSkins: readonly BoatSkin[] = [
 
 export const chronicleScenes: readonly ChronicleScene[] = sceneAssets.map(
   (asset, index) => {
-    const [title, sourceWidth, kind, duration, transition] =
+    const [title, sourceWidth, kind, configuredDuration, transition] =
       sceneDetails[index]
+    const duration = asset.id === 3 ? 5.2 : configuredDuration
 
     return {
       ...asset,
@@ -71,20 +72,20 @@ export const chronicleScenes: readonly ChronicleScene[] = sceneAssets.map(
       duration,
       transition,
       boatSkin: boatSkins[index],
-      timing: asset.id === 16
+      timing: asset.id === 3
+        ? {
+            contentRevealRatio: 0.18,
+            contentHoldRatio: 0.08,
+            cameraRatio: 0.6,
+            transitionRatio: 0.14,
+          }
+        : asset.id === 16
         ? {
             contentRevealRatio: 0.21,
-            contentHoldRatio: 0.24,
-            cameraRatio: 0.55,
+            contentHoldRatio: 0.79,
+            cameraRatio: 0,
             transitionRatio: 0,
           }
-        : asset.id === 17
-          ? {
-              contentRevealRatio: 0,
-              contentHoldRatio: 0.38,
-              cameraRatio: 0.46,
-              transitionRatio: 0.16,
-            }
         : index === 0
         ? {
             contentRevealRatio: 0.18,

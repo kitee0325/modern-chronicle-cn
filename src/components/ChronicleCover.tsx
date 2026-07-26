@@ -1,4 +1,5 @@
 const coverForeground = `${import.meta.env.BASE_URL}assets/cover/foreground.png`
+const coverTitle = `${import.meta.env.BASE_URL}assets/cover/title.png`
 
 export function ChronicleCover() {
   return (
@@ -15,14 +16,13 @@ export function ChronicleCover() {
 
         <header>
           <h1 className="chronicle-cover__title" id="chronicle-cover-title">
-            <span className="chronicle-cover__title-mask">
-              <span className="chronicle-cover__title-line">风雨同舟、家国天下：</span>
-            </span>
-            <span className="chronicle-cover__title-mask">
-              <span className="chronicle-cover__title-line">
-                一名基层老党员与共和国同行的七十年
-              </span>
-            </span>
+            <img
+              className="chronicle-cover__title-art"
+              src={coverTitle}
+              alt="何公的手稿：一名基层老党员与共和国同行的七十年"
+              draggable={false}
+              decoding="sync"
+            />
           </h1>
         </header>
 
