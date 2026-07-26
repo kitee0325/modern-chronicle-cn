@@ -4,7 +4,6 @@ import s10ChartSvg from './assets/charts/s10-chart.svg?url'
 import s11ChartSvg from './assets/charts/s11-chart.svg?url'
 import s13ChartSvg from './assets/charts/s13-chart.svg?url'
 import s14ChartSvg from './assets/charts/s14-chart.svg?url'
-import s16ChartSvg from './assets/charts/s16-chart.svg?url'
 import s17ChartSvg from './assets/charts/s17-chart.svg?url'
 import s19ChartSvg from './assets/charts/s19-chart.svg?url'
 
@@ -54,7 +53,6 @@ const chartSvgs: Record<string, string> = {
   's11-chart': s11ChartSvg,
   's13-chart': s13ChartSvg,
   's14-chart': s14ChartSvg,
-  's16-chart': s16ChartSvg,
   's17-chart': s17ChartSvg,
   's19-chart': s19ChartSvg,
 }
@@ -221,7 +219,6 @@ export const sceneCueManifests: readonly SceneCueManifest[] = [
   { figmaFrameId: '76:14958', frameHeight: 810, cues: [
     cue('s16-title', '76:15098', 'title', 338, 41, 439, 96),
     cue('s16-copy', '76:15099', 'copy', 344, 152, 421, 72),
-    cue('s16-chart', '76:15101', 'chart', 956, 136.040039, 625.600098, 323.959961),
   ] },
   { figmaFrameId: '76:16088', frameHeight: 810, cues: [
     cue('s17-title', '76:16656', 'title', 156, 41, 439, 96),
@@ -244,10 +241,11 @@ export const sceneCueManifests: readonly SceneCueManifest[] = [
   { figmaFrameId: '76:17556', frameHeight: 810, cues: [
     cue('s19-title', '76:20650', 'title', 162, 41, 439, 96),
     cue('s19-copy1', '76:20648', 'copy', 162, 137, 663, 72),
-    cue('s19-chart', '76:20654', 'chart', 924, 47, 1702, 334),
+    cue('s19-chart', '265:27047', 'chart', 0, 0, 3151, 810, {
+      mode: 'initial',
+    }),
     cue('s19-copy2', '76:20649', 'copy', 1627, 48, 726, 48),
     cue('s19-copy3', '76:20651', 'copy', 5199, 89, 726, 94),
-    cue('s19-copy4', '76:20652', 'copy', 6587, 659, 438, 147),
     cue('s19-source', '76:20755', 'source', 0, 740, 3589, 70, {
       text: ['数据来源：国家统计局历年《中国统计年鉴》“职工平均工资及指数”表，历年城镇单位就业人员平均工资统计公报。'],
     }),

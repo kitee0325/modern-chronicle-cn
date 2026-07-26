@@ -21,6 +21,8 @@ gsap.registerPlugin(ScrollTrigger)
 const ASSET_WINDOW_RADIUS = 2
 const DELAYED_CUE_REVEAL_CAMERA_RATIO = 0.36
 const SCROLL_DISTANCE_PER_TIMELINE_SECOND = 1.05
+const TARGET_CAMERA_SCROLL_GAIN = 1
+const MIN_CAMERA_SCROLL_DISTANCE_VH = 0.35
 // Positive values delay the note layer relative to its chart; negative values advance it.
 const BOTTOM_NOTE_LIFECYCLE_OFFSET_SECONDS = 0.5
 const BOTTOM_NOTE_TRANSITION_DURATION_SECONDS = 0.32
@@ -30,7 +32,6 @@ const LAYER_ANIMATED_CHART_IDS = new Set([
   's11-chart',
   's13-chart',
   's14-chart',
-  's16-chart',
 ])
 const BACKGROUND_BOUND_CUE_IDS = new Set(['s17-chart'])
 const RAIN_SCENE_ID = 7
@@ -218,6 +219,7 @@ function SceneContent({
       className="chronicle-track-slot chronicle-track-slot--content"
       data-layer="content"
       data-scene={index}
+      data-motion-active={Math.abs(index - activeScene) <= 1 ? 'true' : undefined}
       style={{ '--scene-ratio': scene.sourceWidth / 1620 } as CSSProperties}
     >
       {manifest.cues.filter((item) => (
@@ -972,6 +974,110 @@ type ChronicleDebugWindow = Window & {
   __chronicleInspectPoint?: (x: number, y: number) => unknown
 }
 
+type ScrollDistanceSpec = {
+  timelineStart: number
+  timelineEnd: number
+  sceneIndex?: number
+  cameraEndProgress?: number
+}
+
+type ScrollMappingSegment = {
+  timelineStart: number
+  timelineEnd: number
+  scrollStart: number
+  scrollEnd: number
+}
+
+function buildScrollMapping(
+  specs: readonly ScrollDistanceSpec[],
+  root: HTMLElement,
+  viewport: HTMLElement,
+) {
+  let scrollCursor = 0
+
+  return specs.map((spec) => {
+    const timelineDuration = spec.timelineEnd - spec.timelineStart
+    const legacyDistance = (
+      timelineDuration
+      * viewport.clientHeight
+      * SCROLL_DISTANCE_PER_TIMELINE_SECOND
+    )
+    const scrollDistance = spec.sceneIndex === undefined
+      ? legacyDistance
+      : Math.max(
+          Math.abs(
+            getTrackX(
+              root,
+              viewport,
+              spec.sceneIndex,
+              spec.cameraEndProgress ?? 1,
+            ) - getTrackX(root, viewport, spec.sceneIndex, 0),
+          ) / TARGET_CAMERA_SCROLL_GAIN,
+          Math.min(
+            legacyDistance,
+            viewport.clientHeight * MIN_CAMERA_SCROLL_DISTANCE_VH,
+          ),
+        )
+    const segment = {
+      timelineStart: spec.timelineStart,
+      timelineEnd: spec.timelineEnd,
+      scrollStart: scrollCursor,
+      scrollEnd: scrollCursor + scrollDistance,
+    }
+
+    scrollCursor = segment.scrollEnd
+    return segment
+  })
+}
+
+function mapScrollProgressToTimelineTime(
+  progress: number,
+  mapping: readonly ScrollMappingSegment[],
+  timelineDuration: number,
+) {
+  const totalScrollDistance = mapping.at(-1)?.scrollEnd ?? 0
+  if (totalScrollDistance <= 0) return progress * timelineDuration
+
+  const scrollPosition = gsap.utils.clamp(0, 1, progress) * totalScrollDistance
+  const segment = mapping.find(({ scrollEnd }) => scrollPosition <= scrollEnd)
+  if (!segment) return timelineDuration
+
+  const segmentScrollDistance = segment.scrollEnd - segment.scrollStart
+  const segmentProgress = segmentScrollDistance > 0
+    ? (scrollPosition - segment.scrollStart) / segmentScrollDistance
+    : 1
+
+  return gsap.utils.interpolate(
+    segment.timelineStart,
+    segment.timelineEnd,
+    segmentProgress,
+  )
+}
+
+function mapTimelineTimeToScrollProgress(
+  time: number,
+  mapping: readonly ScrollMappingSegment[],
+  timelineDuration: number,
+) {
+  const totalScrollDistance = mapping.at(-1)?.scrollEnd ?? 0
+  if (totalScrollDistance <= 0) return time / Math.max(timelineDuration, Number.EPSILON)
+
+  const segment = mapping.find(({ timelineEnd }) => time <= timelineEnd)
+  if (!segment) return 1
+
+  const segmentTimelineDuration = segment.timelineEnd - segment.timelineStart
+  const segmentProgress = segmentTimelineDuration > 0
+    ? (time - segment.timelineStart) / segmentTimelineDuration
+    : 1
+  const scrollPosition = gsap.utils.interpolate(
+    segment.scrollStart,
+    segment.scrollEnd,
+    segmentProgress,
+  )
+
+  return scrollPosition / totalScrollDistance
+}
+
 export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
   const rootRef = useRef<HTMLElement>(null)
   const stageRef = useRef<HTMLDivElement>(null)
@@ -980,6 +1086,7 @@ export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
   const timelineRef = useRef<gsap.core.Timeline | null>(null)
   const scrollTriggerRef = useRef<ScrollTrigger | null>(null)
   const sceneStartsRef = useRef<number[]>([])
+  const scrollMappingRef = useRef<ScrollMappingSegment[]>([])
   const staticPreview = useMemo(() => readStaticPreview(), [])
   const timelineProbe = useMemo(() => readTimelineProbe(), [])
   const isMotionDebug = useMemo(() => {
@@ -1006,7 +1113,11 @@ export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
     const sceneStart = sceneStartsRef.current[sceneIndex]
     if (!timeline || !trigger || sceneStart === undefined) return
 
-    const timelineProgress = sceneStart / timeline.duration()
+    const timelineProgress = mapTimelineTimeToScrollProgress(
+      sceneStart,
+      scrollMappingRef.current,
+      timeline.duration(),
+    )
     const targetScrollY = Math.ceil(
       trigger.start + (trigger.end - trigger.start) * timelineProgress,
     )
@@ -1461,6 +1572,14 @@ export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
 
       const timeline = gsap.timeline({ defaults: { ease: 'none' } })
       timelineRef.current = timeline
+      const scrollDistanceSpecs: ScrollDistanceSpec[] = []
+      const addLegacyScrollDistance = (timelineStart: number, duration: number) => {
+        if (duration <= 0) return
+        scrollDistanceSpecs.push({
+          timelineStart,
+          timelineEnd: timelineStart + duration,
+        })
+      }
       let cursor = 0
 
       if (coverLayer && coverPanorama && prefaceMask && prefaceCopy) {
@@ -1528,6 +1647,7 @@ export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
         }, mixAt + mixDuration * 0.6)
 
         cursor += coverDuration
+        addLegacyScrollDistance(0, coverDuration)
         timeline.set(coverLayer, { autoAlpha: 0 }, cursor)
         timeline.set(interiorLayers, {
           autoAlpha: 1,
@@ -1563,6 +1683,17 @@ export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
         const transitionAt = cameraAt + cameraDuration
         const nextScene = chronicleScenes[index + 1]
         const cameraEndProgress = getCameraEndProgress(scene, coverMotion)
+        addLegacyScrollDistance(cursor, revealDuration)
+        addLegacyScrollDistance(cursor + revealDuration, holdDuration)
+        if (cameraDuration > 0) {
+          scrollDistanceSpecs.push({
+            timelineStart: cameraAt,
+            timelineEnd: transitionAt,
+            sceneIndex: index,
+            cameraEndProgress,
+          })
+        }
+        addLegacyScrollDistance(transitionAt, transitionDuration)
         const scene03Timing = scene.id === DELAYED_FOREGROUND_SCENE_ID
           ? (() => {
               const durationScale = cameraDuration / SCENE_03_CAMERA_DURATION
@@ -1939,6 +2070,7 @@ export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
       })
 
       if (endingLayer && endingMask && endingCopy) {
+        const endingTimelineStart = cursor
         const endingScrollAt = cursor + ENDING_START_HOLD_DURATION
         timeline.to(endingCopy, {
           y: () => -Math.max(0, endingCopy.scrollHeight - endingMask.clientHeight),
@@ -1947,6 +2079,7 @@ export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
         }, endingScrollAt)
 
         cursor = endingScrollAt + ENDING_SCROLL_DURATION + ENDING_END_HOLD_DURATION
+        addLegacyScrollDistance(endingTimelineStart, cursor - endingTimelineStart)
         timeline.set(endingLayer, { autoAlpha: 1 }, cursor)
       }
 
@@ -1963,6 +2096,7 @@ export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
         const probeOutput = document.createElement('output')
         probeOutput.id = 'chronicle-timeline-probe'
         probeOutput.hidden = true
+        const probeFrameRect = viewport.getBoundingClientRect()
         probeOutput.textContent = JSON.stringify({
           scene: probeScene.id,
           progress: timelineProbe.progress,
@@ -1989,6 +2123,18 @@ export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
               opacity: getComputedStyle(surface).opacity,
             }),
           ),
+          cues: Array.from(
+            root.querySelectorAll<HTMLElement>(
+              `.chronicle-track-slot[data-scene="${timelineProbe.scene}"] .chronicle-cue`,
+            ),
+            (cue) => ({
+              id: cue.dataset.cue,
+              opacity: getComputedStyle(cue).opacity,
+              visibility: getComputedStyle(cue).visibility,
+              transform: getComputedStyle(cue).transform,
+              rect: getDebugRect(cue, probeFrameRect),
+            }),
+          ),
           images: Array.from(
             root.querySelectorAll<HTMLImageElement>(
               `.chronicle-track-slot[data-scene="${timelineProbe.scene}"] img`,
@@ -1998,6 +2144,7 @@ export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
               complete: image.complete,
               naturalWidth: image.naturalWidth,
               opacity: getComputedStyle(image).opacity,
+              rect: getDebugRect(image, probeFrameRect),
             }),
           ),
         })
@@ -2005,32 +2152,78 @@ export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
         return
       }
 
+      let scrollMapping = buildScrollMapping(
+        scrollDistanceSpecs,
+        root,
+        viewport,
+      )
+      scrollMappingRef.current = scrollMapping
+      let hasCompletedInitialRefresh = false
+      let refreshTimelineTime = 0
+
+      const syncTimelineToScroll = (progress: number) => {
+        const time = mapScrollProgressToTimelineTime(
+          progress,
+          scrollMapping,
+          timeline.duration(),
+        )
+        timeline.time(time, false)
+
+        let nextActive = sceneStarts.length - 1
+        for (let index = 1; index < sceneStarts.length; index += 1) {
+          if (time < sceneStarts[index]) {
+            nextActive = index - 1
+            break
+          }
+        }
+        if (nextActive !== activeSceneRef.current) {
+          activeSceneRef.current = nextActive
+          setActiveScene(nextActive)
+        }
+      }
+
+      timeline.pause(0)
       scrollTriggerRef.current = ScrollTrigger.create({
-        animation: timeline,
         trigger: root,
         start: 'top top',
-        end: () => `+=${Math.round(
-          cursor * window.innerHeight * SCROLL_DISTANCE_PER_TIMELINE_SECOND,
-        )}`,
+        end: () => {
+          scrollMapping = buildScrollMapping(
+            scrollDistanceSpecs,
+            root,
+            viewport,
+          )
+          scrollMappingRef.current = scrollMapping
+          return `+=${Math.round(scrollMapping.at(-1)?.scrollEnd ?? 0)}`
+        },
         pin: stage,
-        scrub: true,
         anticipatePin: 1,
         invalidateOnRefresh: true,
-        onUpdate: ({ progress }) => {
-          const time = progress * timeline.duration()
-          let nextActive = sceneStarts.length - 1
-          for (let index = 1; index < sceneStarts.length; index += 1) {
-            if (time < sceneStarts[index]) {
-              nextActive = index - 1
-              break
-            }
-          }
-          if (nextActive !== activeSceneRef.current) {
-            activeSceneRef.current = nextActive
-            setActiveScene(nextActive)
+        onRefreshInit: () => {
+          if (hasCompletedInitialRefresh) {
+            refreshTimelineTime = timeline.time()
           }
         },
+        onRefresh: (trigger) => {
+          timeline.invalidate()
+          if (!hasCompletedInitialRefresh) {
+            hasCompletedInitialRefresh = true
+            syncTimelineToScroll(trigger.progress)
+            return
+          }
+
+          const progress = mapTimelineTimeToScrollProgress(
+            refreshTimelineTime,
+            scrollMapping,
+            timeline.duration(),
+          )
+          trigger.scroll(
+            trigger.start + (trigger.end - trigger.start) * progress,
+          )
+          syncTimelineToScroll(progress)
+        },
+        onUpdate: ({ progress }) => syncTimelineToScroll(progress),
       })
+
     }, root)
 
     return () => {
@@ -2038,6 +2231,7 @@ export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
       timelineRef.current = null
       scrollTriggerRef.current = null
       sceneStartsRef.current = []
+      scrollMappingRef.current = []
     }
   }, [
     chartSvgMarkup,

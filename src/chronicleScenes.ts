@@ -23,6 +23,12 @@ export type ChronicleScene = SceneAsset & {
   timing: SceneTiming
 }
 
+const WINDOW_SCENE_CONTENT_REVEAL_DURATION = 0.44
+const WINDOW_SCENE_CONTENT_HOLD_DURATION = 0.28
+const WINDOW_SCENE_DURATION = (
+  WINDOW_SCENE_CONTENT_REVEAL_DURATION + WINDOW_SCENE_CONTENT_HOLD_DURATION
+)
+
 const sceneDetails = [
   ['启程', 5690, 'interior', 2.8, 'dive'],
   ['江南水乡', 9034, 'exterior', 4.4, 'surface'],
@@ -39,7 +45,7 @@ const sceneDetails = [
   ['教育与远方', 9278, 'exterior', 4.5, 'horizontal'],
   ['湖光新章', 5764, 'exterior', 3.2, 'horizontal'],
   ['城市生长', 5702, 'exterior', 3.2, 'surface'],
-  ['车窗里的今天', 3844, 'interior', 2.1, 'dive'],
+  ['车窗里的今天', 3844, 'interior', WINDOW_SCENE_DURATION, 'dive'],
   ['水面之上', 3844, 'exterior', 2.6, 'surface'],
   ['驶向当下', 7968, 'interior', 3.8, 'dive'],
   ['未完的旅程', 15734, 'exterior', 6.2, 'horizontal'],
@@ -81,8 +87,8 @@ export const chronicleScenes: readonly ChronicleScene[] = sceneAssets.map(
           }
         : asset.id === 16
         ? {
-            contentRevealRatio: 0.21,
-            contentHoldRatio: 0.79,
+            contentRevealRatio: WINDOW_SCENE_CONTENT_REVEAL_DURATION / duration,
+            contentHoldRatio: WINDOW_SCENE_CONTENT_HOLD_DURATION / duration,
             cameraRatio: 0,
             transitionRatio: 0,
           }

@@ -260,6 +260,9 @@ select {
   overflow: hidden;
   opacity: 0;
   visibility: hidden;
+}
+
+.chronicle-track-slot--content[data-motion-active="true"] .chronicle-cue {
   will-change: transform, opacity;
 }
 
