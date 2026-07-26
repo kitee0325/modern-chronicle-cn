@@ -33,10 +33,14 @@ const sceneAssetUrl = (
   return `${import.meta.env.BASE_URL}assets/scenes/${sceneDirectory}/${file}${stateSuffix}.${extension}`
 }
 
+export const coverAssets = {
+  foreground: `${import.meta.env.BASE_URL}assets/cover/foreground.png`,
+  title: `${import.meta.env.BASE_URL}assets/cover/title.png`,
+} as const
+
 export const sceneAssets = [
   {
     id: 1,
-    background: sceneAssetUrl(1, 'background'),
     foreground: sceneAssetUrl(1, 'foreground'),
   },
   {

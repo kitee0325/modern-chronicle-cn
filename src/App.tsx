@@ -2,8 +2,9 @@ import { useCallback, useEffect, useState } from 'react'
 import { AppLoading, type LoadingPhase } from './components/AppLoading'
 import { ScrollChronicle } from './components/ScrollChronicle'
 import { Scene4MaskEditor } from './components/Scene4MaskEditor'
+import type { RevealState } from './components/LoadingCity'
+import { useAssetPreloader } from './hooks/useAssetPreloader'
 import { usePrefersReducedMotion } from './hooks/usePrefersReducedMotion'
-import { useSimulatedProgress } from './hooks/useSimulatedProgress'
 
 function App() {
   const params = new URLSearchParams(window.location.search)
@@ -11,22 +12,30 @@ function App() {
   const isStaticPreview = params.get('static') === '1'
   const bypassLoading = isStaticPreview
     || (import.meta.env.DEV && params.get('skipLoading') === '1')
-  const progress = useSimulatedProgress()
+  const { progress } = useAssetPreloader(!bypassLoading && !isScene4MaskEditor)
   const reducedMotion = usePrefersReducedMotion()
   const [phase, setPhase] = useState<LoadingPhase>(bypassLoading ? 'content' : 'loading')
-  const [revealQueueIdle, setRevealQueueIdle] = useState(false)
+  const [revealState, setRevealState] = useState<RevealState>({
+    isIdle: false,
+    observedProgress: 0,
+  })
 
-  const handleRevealQueueChange = useCallback((isIdle: boolean) => {
-    setRevealQueueIdle(isIdle)
+  const handleRevealStateChange = useCallback((state: RevealState) => {
+    setRevealState(state)
   }, [])
 
   useEffect(() => {
-    if (phase !== 'loading' || progress < 100 || !revealQueueIdle) return
+    if (
+      phase !== 'loading'
+      || progress < 100
+      || !revealState.isIdle
+      || revealState.observedProgress < 100
+    ) return
 
     const transitionTimer = window.setTimeout(() => setPhase('settling'), 0)
 
     return () => window.clearTimeout(transitionTimer)
-  }, [phase, progress, revealQueueIdle])
+  }, [phase, progress, revealState])
 
   useEffect(() => {
     if (phase !== 'settling') return
@@ -62,7 +71,7 @@ function App() {
           phase={phase}
           progress={progress}
           reducedMotion={reducedMotion}
-          onRevealQueueChange={handleRevealQueueChange}
+          onRevealStateChange={handleRevealStateChange}
         />
       )}
 

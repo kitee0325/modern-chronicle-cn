@@ -11,13 +11,18 @@ const BUILDING_ANCHORS = [132, 210, 294, 380, 474, 566, 654, 728, 790]
 type LoadingCityProps = {
   progress: number
   reducedMotion: boolean
-  onRevealQueueChange: (isIdle: boolean) => void
+  onRevealStateChange: (state: RevealState) => void
+}
+
+export type RevealState = {
+  isIdle: boolean
+  observedProgress: number
 }
 
 export function LoadingCity({
   progress,
   reducedMotion,
-  onRevealQueueChange,
+  onRevealStateChange,
 }: LoadingCityProps) {
   const [revealedCount, setRevealedCount] = useState(0)
   const revealedCountRef = useRef(0)
@@ -25,21 +30,26 @@ export function LoadingCity({
   const nextRevealAtRef = useRef(0)
   const settleAfterRef = useRef(0)
   const idleNotifiedRef = useRef(true)
+  const observedProgressRef = useRef(progress)
   const reducedMotionRef = useRef(reducedMotion)
-  const onQueueChangeRef = useRef(onRevealQueueChange)
+  const onRevealStateChangeRef = useRef(onRevealStateChange)
 
   useEffect(() => {
-    onQueueChangeRef.current = onRevealQueueChange
-  }, [onRevealQueueChange])
+    onRevealStateChangeRef.current = onRevealStateChange
+  }, [onRevealStateChange])
 
   useEffect(() => {
     reducedMotionRef.current = reducedMotion
+    observedProgressRef.current = progress
 
     if (reducedMotion) {
       queueTargetRef.current = BUILDING_ANCHORS.length
       revealedCountRef.current = BUILDING_ANCHORS.length
       idleNotifiedRef.current = true
-      onQueueChangeRef.current(true)
+      onRevealStateChangeRef.current({
+        isIdle: true,
+        observedProgress: progress,
+      })
       return
     }
 
@@ -50,7 +60,15 @@ export function LoadingCity({
     if (nextTarget > queueTargetRef.current) {
       queueTargetRef.current = nextTarget
       idleNotifiedRef.current = false
-      onQueueChangeRef.current(false)
+      onRevealStateChangeRef.current({
+        isIdle: false,
+        observedProgress: progress,
+      })
+    } else if (idleNotifiedRef.current) {
+      onRevealStateChangeRef.current({
+        isIdle: true,
+        observedProgress: progress,
+      })
     }
   }, [progress, reducedMotion])
 
@@ -77,7 +95,10 @@ export function LoadingCity({
         now >= settleAfterRef.current
       ) {
         idleNotifiedRef.current = true
-        onQueueChangeRef.current(true)
+        onRevealStateChangeRef.current({
+          isIdle: true,
+          observedProgress: observedProgressRef.current,
+        })
       }
     }, QUEUE_TICK_INTERVAL)
 

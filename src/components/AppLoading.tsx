@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { LoadingCity } from './LoadingCity'
+import { LoadingCity, type RevealState } from './LoadingCity'
 
 export type LoadingPhase = 'loading' | 'settling' | 'exiting' | 'content'
 
@@ -7,14 +7,14 @@ type AppLoadingProps = {
   phase: LoadingPhase
   progress: number
   reducedMotion: boolean
-  onRevealQueueChange: (isIdle: boolean) => void
+  onRevealStateChange: (state: RevealState) => void
 }
 
 export function AppLoading({
   phase,
   progress,
   reducedMotion,
-  onRevealQueueChange,
+  onRevealStateChange,
 }: AppLoadingProps) {
   const visualProgress = Math.min(100, Math.max(0, progress))
   const displayedProgress = Math.round(visualProgress)
@@ -47,7 +47,7 @@ export function AppLoading({
         <LoadingCity
           progress={visualProgress}
           reducedMotion={reducedMotion}
-          onRevealQueueChange={onRevealQueueChange}
+          onRevealStateChange={onRevealStateChange}
         />
 
         <p className="app-loading__status" aria-hidden="true">加载中</p>

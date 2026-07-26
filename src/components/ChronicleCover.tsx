@@ -1,5 +1,4 @@
-const coverForeground = `${import.meta.env.BASE_URL}assets/cover/foreground.png`
-const coverTitle = `${import.meta.env.BASE_URL}assets/cover/title.png`
+import { coverAssets } from '../sceneAssets'
 
 export function ChronicleCover() {
   return (
@@ -7,7 +6,7 @@ export function ChronicleCover() {
       <div className="chronicle-cover__panorama" data-cover-panorama>
         <img
           className="chronicle-cover__art"
-          src={coverForeground}
+          src={coverAssets.foreground}
           alt=""
           draggable={false}
           decoding="sync"
@@ -18,7 +17,7 @@ export function ChronicleCover() {
           <h1 className="chronicle-cover__title" id="chronicle-cover-title">
             <img
               className="chronicle-cover__title-art"
-              src={coverTitle}
+              src={coverAssets.title}
               alt="何公的手稿：一名基层老党员与共和国同行的七十年"
               draggable={false}
               decoding="sync"
