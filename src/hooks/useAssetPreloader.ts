@@ -7,7 +7,7 @@ const CRITICAL_PROGRESS_LIMIT = 95
 const LOAD_TIMEOUT = 12_000
 const COMPLETION_DURATION = 800
 const FONT_TASK_KEY = 'font:FZ Da Biao Song'
-const FONT_URL = `${import.meta.env.BASE_URL}assets/fonts/FZDaBiaoSong-subset.woff2`
+const FONT_URL = `${import.meta.env.BASE_URL}assets/fonts/FZDaBiaoSong.ttf`
 
 export type AssetPreloadStatus = 'loading' | 'complete' | 'degraded'
 
@@ -49,8 +49,11 @@ export const criticalImageUrls = unique([
   ...sceneCueManifests
     .slice(0, CRITICAL_SCENE_COUNT)
     .flatMap((manifest) => manifest.cues)
-    .filter((cue) => cue.kind !== 'source')
-    .map((cue) => cue.svgAsset ?? cue.asset),
+    .flatMap((cue) => {
+      if (cue.kind === 'chart') return [cue.svgAsset]
+      if (cue.kind === 'illustration') return [cue.asset]
+      return []
+    }),
 ])
 
 function preloadImageOnce(url: string) {

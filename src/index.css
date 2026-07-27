@@ -97,8 +97,6 @@ select {
 }
 
 .chronicle-frame {
-  --bottom-note-height: 105px;
-
   position: relative;
   width: min(100vw, 177.7778vh);
   height: min(100vh, 56.25vw);
@@ -178,21 +176,6 @@ select {
   }
 }
 
-.chronicle-bottom-backdrop {
-  position: absolute;
-  z-index: 10;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  height: var(--bottom-note-height);
-  background-position: left center;
-  background-repeat: no-repeat;
-  background-size: 100% 100%;
-  opacity: 0;
-  pointer-events: none;
-  will-change: transform, opacity;
-}
-
 .chronicle-track-surface {
   position: absolute;
   top: 0;
@@ -214,6 +197,11 @@ select {
   height: 100%;
   aspect-ratio: var(--scene-ratio);
   contain: layout paint;
+}
+
+.chronicle-track-slot--content {
+  /* One inherited em equals the rendered 810 px Figma stage height. */
+  font-size: min(100vh, 56.25vw);
 }
 
 .chronicle-track-slot--background > img,
@@ -262,7 +250,8 @@ select {
   visibility: hidden;
 }
 
-.chronicle-track-slot--content[data-motion-active="true"] .chronicle-cue {
+.chronicle-track-slot--content[data-motion-active="true"] .chronicle-cue--chart,
+.chronicle-track-slot--content[data-motion-active="true"] .chronicle-cue--illustration {
   will-change: transform, opacity;
 }
 
@@ -277,6 +266,26 @@ select {
   object-fit: contain;
   object-position: left top;
   user-select: none;
+}
+
+.chronicle-cue__text {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+  font-family: var(--chronicle-font-serif);
+  font-style: normal;
+  font-weight: 400;
+}
+
+.chronicle-cue__text-block {
+  position: absolute;
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.chronicle-cue__text-block--heading {
+  white-space: nowrap;
 }
 
 .chronicle-cue--title {
@@ -304,23 +313,6 @@ select {
   overflow: visible;
 }
 
-.chronicle-night-copy {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  color: #c9b27f;
-  font-family: var(--chronicle-font-serif);
-  font-size: 3.9506vh;
-  font-weight: 400;
-  line-height: 2.1875;
-  letter-spacing: 0.08em;
-  white-space: nowrap;
-}
-
-.chronicle-night-copy span {
-  display: block;
-}
-
 .chronicle-cue--initial {
   opacity: 1;
   visibility: visible;
@@ -343,7 +335,8 @@ select {
 }
 
 .chronicle-cue--title,
-.chronicle-cue--copy {
+.chronicle-cue--copy,
+.chronicle-cue--source {
   z-index: 2;
 }
 
@@ -475,7 +468,7 @@ select {
   position: absolute;
   top: 60.9%;
   left: 1.4816%;
-  width: 15.0184%;
+  width: 19%;
   margin: 0;
   opacity: 0;
   transform: translateY(12%);
@@ -568,7 +561,7 @@ select {
 }
 
 .chronicle-ending__mask {
-  height: 14em;
+  height: 21em;
   overflow: hidden;
   font-size: var(--chronicle-copy-size);
   line-height: var(--chronicle-copy-leading);

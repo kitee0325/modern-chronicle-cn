@@ -10,7 +10,14 @@ import {
   readCoverMotionConfig,
   type CoverMotionConfig,
 } from '../coverMotion'
-import { normalizeCueValue, sceneCueManifests, type SceneCue } from '../sceneCues'
+import {
+  isTextCue,
+  normalizeCueValue,
+  sceneCueManifests,
+  type ChartSceneCue,
+  type CueTextBlock,
+  type TextSceneCue,
+} from '../sceneCues'
 import { readScene4Mask, type Scene4Mask } from '../scene4Mask'
 import { ChronicleBoat } from './ChronicleBoat'
 import { ChronicleCover } from './ChronicleCover'
@@ -23,9 +30,6 @@ const DELAYED_CUE_REVEAL_CAMERA_RATIO = 0.36
 const SCROLL_DISTANCE_PER_TIMELINE_SECOND = 1.05
 const TARGET_CAMERA_SCROLL_GAIN = 1
 const MIN_CAMERA_SCROLL_DISTANCE_VH = 0.35
-// Positive values delay the note layer relative to its chart; negative values advance it.
-const BOTTOM_NOTE_LIFECYCLE_OFFSET_SECONDS = 0.5
-const BOTTOM_NOTE_TRANSITION_DURATION_SECONDS = 0.32
 const MAX_CHART_ANIMATION_LAYERS = 24
 const LAYER_ANIMATED_CHART_IDS = new Set([
   's02-chart',
@@ -33,7 +37,7 @@ const LAYER_ANIMATED_CHART_IDS = new Set([
   's13-chart',
   's14-chart',
 ])
-const BACKGROUND_BOUND_CUE_IDS = new Set(['s17-chart'])
+const BACKGROUND_BOUND_CUE_IDS = new Set(['s17-chart', 's19-chart'])
 const RAIN_SCENE_ID = 7
 const CROSSFADE_SCENE_ID = 7
 const DELAYED_FOREGROUND_SCENE_ID = 3
@@ -184,17 +188,41 @@ function SceneSlot({ scene, index, layer, activeScene }: SceneSlotProps) {
   )
 }
 
-function getCueImageStyle(cue: SceneCue): CSSProperties | undefined {
-  if (!cue.crop) return undefined
-
+function getCueTextBlockStyle(
+  cue: TextSceneCue,
+  block: CueTextBlock,
+): CSSProperties {
   return {
-    position: 'absolute',
-    left: `${(-cue.crop.x / cue.crop.width) * 100}%`,
-    top: `${(-cue.crop.y / cue.crop.height) * 100}%`,
-    width: `${(cue.crop.sourceWidth / cue.crop.width) * 100}%`,
-    height: `${(cue.crop.sourceHeight / cue.crop.height) * 100}%`,
-    maxWidth: 'none',
+    left: `${(block.x / cue.width) * 100}%`,
+    top: `${(block.y / cue.height) * 100}%`,
+    width: `${(block.width / cue.width) * 100}%`,
+    minHeight: `${(block.height / cue.height) * 100}%`,
+    color: block.color,
+    fontSize: `${(block.fontSize / 810) * 100}%`,
+    lineHeight: block.lineHeight / block.fontSize,
+    textAlign: block.align,
   }
+}
+
+function CueText({ cue }: { cue: TextSceneCue }) {
+  return (
+    <div className="chronicle-cue__text">
+      {cue.blocks.map((block) => {
+        const Tag = block.role === 'heading' ? 'h2' : 'p'
+
+        return (
+          <Tag
+            className={`chronicle-cue__text-block chronicle-cue__text-block--${block.role}`}
+            data-figma-text-node={block.figmaNodeId}
+            key={block.figmaNodeId}
+            style={getCueTextBlockStyle(cue, block)}
+          >
+            {block.text}
+          </Tag>
+        )
+      })}
+    </div>
+  )
 }
 
 function SceneContent({
@@ -222,10 +250,9 @@ function SceneContent({
       data-motion-active={Math.abs(index - activeScene) <= 1 ? 'true' : undefined}
       style={{ '--scene-ratio': scene.sourceWidth / 1620 } as CSSProperties}
     >
-      {manifest.cues.filter((item) => (
-        item.kind !== 'source'
-        && BACKGROUND_BOUND_CUE_IDS.has(item.id) === backgroundBound
-      )).map((item) => {
+      {manifest.cues.filter(
+        (item) => BACKGROUND_BOUND_CUE_IDS.has(item.id) === backgroundBound,
+      ).map((item) => {
         const x = normalizeCueValue(item.x, manifest.frameHeight)
         const y = normalizeCueValue(item.y, manifest.frameHeight)
         const width = normalizeCueValue(item.width, manifest.frameHeight)
@@ -234,7 +261,6 @@ function SceneContent({
         return (
           <div
             className={`chronicle-cue chronicle-cue--${item.kind} ${item.mode === 'initial' ? 'chronicle-cue--initial' : ''}`}
-            data-cropped={item.crop ? '' : undefined}
             data-cue={item.id}
             data-cue-kind={item.kind}
             data-cue-mode={item.mode}
@@ -247,14 +273,16 @@ function SceneContent({
               height: `${(height / 810) * 100}%`,
             }}
           >
-            {item.svgAsset
+            {isTextCue(item) ? (
+              <CueText cue={item} />
+            ) : item.kind === 'chart'
               && LAYER_ANIMATED_CHART_IDS.has(item.id)
               && chartSvgMarkup[item.id] ? (
               <div
                 className="chronicle-cue__svg"
                 dangerouslySetInnerHTML={{ __html: chartSvgMarkup[item.id] }}
               />
-            ) : item.svgAsset ? (
+            ) : item.kind === 'chart' ? (
               <img
                 src={isInAssetWindow ? item.svgAsset : undefined}
                 data-src={item.svgAsset}
@@ -262,12 +290,6 @@ function SceneContent({
                 draggable={false}
                 decoding="async"
               />
-            ) : item.id === 's08-copy' ? (
-              <div className="chronicle-night-copy">
-                <span>在这样的境遇下，消沉的赵大春回到了家乡。</span>
-                <span>最终，他接受了父母之命、媒妁之言，</span>
-                <span>与一位农村姑娘结了婚。</span>
-              </div>
             ) : (
               <img
                 src={isInAssetWindow ? item.asset : undefined}
@@ -275,7 +297,6 @@ function SceneContent({
                 alt=""
                 draggable={false}
                 decoding="async"
-                style={getCueImageStyle(item)}
               />
             )}
           </div>
@@ -578,7 +599,7 @@ function addCueAnimations(
   }, sceneStart)
 
   const ordered = [...cues].sort((a, b) => {
-    const priority = { title: 0, copy: 1, chart: 2, illustration: 3 }
+    const priority = { title: 0, copy: 1, chart: 2, illustration: 3, source: 4 }
     return priority[a.dataset.cueKind as keyof typeof priority]
       - priority[b.dataset.cueKind as keyof typeof priority]
   })
@@ -1082,7 +1103,6 @@ export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
   const rootRef = useRef<HTMLElement>(null)
   const stageRef = useRef<HTMLDivElement>(null)
   const frameRef = useRef<HTMLDivElement>(null)
-  const bottomBackdropRef = useRef<HTMLDivElement>(null)
   const timelineRef = useRef<gsap.core.Timeline | null>(null)
   const scrollTriggerRef = useRef<ScrollTrigger | null>(null)
   const sceneStartsRef = useRef<number[]>([])
@@ -1097,8 +1117,10 @@ export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
   const scene4Mask = useMemo(() => readScene4Mask(), [])
   const chartAssets = useMemo(
     () => sceneCueManifests.flatMap((manifest) => manifest.cues)
-      .filter((cue) => cue.svgAsset && LAYER_ANIMATED_CHART_IDS.has(cue.id))
-      .map((cue) => ({ id: cue.id, asset: cue.svgAsset! })),
+      .filter((cue): cue is ChartSceneCue => (
+        cue.kind === 'chart' && LAYER_ANIMATED_CHART_IDS.has(cue.id)
+      ))
+      .map((cue) => ({ id: cue.id, asset: cue.svgAsset })),
     [],
   )
   const [chartSvgMarkup, setChartSvgMarkup] = useState<Readonly<Record<string, string>> | null>(null)
@@ -1331,8 +1353,7 @@ export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
     const root = rootRef.current
     const stage = stageRef.current
     const viewport = frameRef.current
-    const bottomBackdrop = bottomBackdropRef.current
-    if (!root || !stage || !viewport || !bottomBackdrop || chartSvgMarkup === null) return
+    if (!root || !stage || !viewport || chartSvgMarkup === null) return
 
     const sceneStarts: number[] = []
     const context = gsap.context(() => {
@@ -1398,7 +1419,6 @@ export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
       gsap.set(allSurfaces, { autoAlpha: 1, scale: 1, transformOrigin: '50% 46%' })
       gsap.set(allScrollCues, { autoAlpha: 0, y: 0 })
       gsap.set(initialCues, { autoAlpha: 1, y: 0 })
-      gsap.set(bottomBackdrop, { autoAlpha: 0, yPercent: 100 })
       gsap.set(endingLayer, { autoAlpha: 0 })
       gsap.set(endingCopy, { y: 0 })
       gsap.set(boatSkins, { autoAlpha: 0 })
@@ -1440,9 +1460,6 @@ export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
 
       if (staticPreview) {
         const scene = chronicleScenes[staticPreview.scene]
-        const hasBottomNote = sceneCueManifests[staticPreview.scene].cues.some(
-          (cue) => cue.kind === 'source',
-        )
         const sceneSurfaces = getTrackSurfaces(root, scene.track)
         const contentCues = root.querySelectorAll<HTMLElement>(
           `.chronicle-track-slot--content[data-scene="${staticPreview.scene}"] .chronicle-cue[data-cue-mode="scroll"]`,
@@ -1472,10 +1489,6 @@ export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
         gsap.set(contentCues, {
           autoAlpha: cueProgress,
           y: reducedMotion ? 0 : 14 * (1 - cueProgress),
-        })
-        gsap.set(bottomBackdrop, {
-          autoAlpha: hasBottomNote && cueProgress > 0 ? 1 : 0,
-          yPercent: hasBottomNote && (cueProgress > 0 || reducedMotion) ? 0 : 100,
         })
         gsap.set(interiorSurfaces, { autoAlpha: scene.track === 'interior' ? 1 : 0 })
         gsap.set(exteriorContentLayers, { autoAlpha: scene.track === 'exterior' ? 1 : 0 })
@@ -1662,9 +1675,6 @@ export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
       chronicleScenes.forEach((scene, index) => {
         sceneStarts.push(cursor)
         const cues = getSceneCues(root, index)
-        const hasBottomDecoration = sceneCueManifests[index].cues.some(
-          (cue) => cue.kind === 'source',
-        )
         const sceneSurfaces = getTrackSurfaces(root, scene.track)
         const revealDuration = scene.duration * scene.timing.contentRevealRatio
         const holdDuration = scene.duration * scene.timing.contentHoldRatio
@@ -1786,41 +1796,6 @@ export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
           .filter(({ progress }) => progress <= 0.001)
           .map(({ cue }) => cue)
         const delayedSceneCues = cueEntries.filter(({ progress }) => progress > 0.001)
-
-        if (hasBottomDecoration) {
-          const chartEntry = cueEntries.find(
-            ({ cue }) => cue.dataset.cueKind === 'chart',
-          )
-          const chartLifecycleStart = chartEntry && chartEntry.progress > 0.001
-            ? getCameraTimelineAtProgress(chartEntry.progress)
-            : cursor
-          const noteEnterAt = Math.max(
-            0,
-            chartLifecycleStart + BOTTOM_NOTE_LIFECYCLE_OFFSET_SECONDS,
-          )
-          const noteExitAt = Math.max(
-            noteEnterAt + BOTTOM_NOTE_TRANSITION_DURATION_SECONDS,
-            transitionAt + BOTTOM_NOTE_LIFECYCLE_OFFSET_SECONDS,
-          )
-
-          if (reducedMotion) {
-            timeline.set(bottomBackdrop, { autoAlpha: 1, yPercent: 0 }, noteEnterAt)
-            timeline.set(bottomBackdrop, { autoAlpha: 0, yPercent: 0 }, noteExitAt)
-          } else {
-            timeline.to(bottomBackdrop, {
-              autoAlpha: 1,
-              yPercent: 0,
-              duration: BOTTOM_NOTE_TRANSITION_DURATION_SECONDS,
-              ease: 'power2.out',
-            }, noteEnterAt)
-            timeline.to(bottomBackdrop, {
-              autoAlpha: 0,
-              yPercent: 100,
-              duration: BOTTOM_NOTE_TRANSITION_DURATION_SECONDS,
-              ease: 'power2.in',
-            }, noteExitAt)
-          }
-        }
 
         addCueAnimations(
           timeline,
@@ -2279,14 +2254,6 @@ export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
 
           {!staticPreview && <ChronicleEnding />}
 
-          <div
-            className="chronicle-bottom-backdrop"
-            ref={bottomBackdropRef}
-            aria-hidden="true"
-            style={{
-              backgroundImage: `url(${import.meta.env.BASE_URL}assets/bottom-annotation.png)`,
-            }}
-          />
           <ChronicleRain />
 
           <p className="sr-only" aria-live="polite">
