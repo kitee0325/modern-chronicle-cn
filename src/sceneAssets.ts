@@ -131,4 +131,5 @@ export const sceneAssets = [
     background: sceneAssetUrl(19, 'background'),
     foreground: sceneAssetUrl(19, 'foreground'),
   },
+  { id: 20, foreground: sceneAssetUrl(20, 'foreground') },
 ] as const satisfies readonly SceneAsset[]

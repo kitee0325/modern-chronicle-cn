@@ -790,7 +790,7 @@ export const sceneCueManifests: readonly SceneCueManifest[] = [
     ],
   },
   {
-    figmaFrameId: '76:17556',
+    figmaFrameId: '434:3',
     frameHeight: 810,
     cues: [
       textCue('s19-title', '76:20650', 'title', 162, 41, 439, 96, [
@@ -842,6 +842,11 @@ export const sceneCueManifests: readonly SceneCueManifest[] = [
         ),
       ]),
     ],
+  },
+  {
+    figmaFrameId: '434:6',
+    frameHeight: 810,
+    cues: [],
   },
 ] as const
 

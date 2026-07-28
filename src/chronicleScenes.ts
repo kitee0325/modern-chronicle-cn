@@ -48,7 +48,8 @@ const sceneDetails = [
   ['车窗里的今天', 3844, 'interior', WINDOW_SCENE_DURATION, 'dive'],
   ['水面之上', 3844, 'exterior', 2.6, 'surface'],
   ['驶向当下', 7968, 'interior', 3.8, 'dive'],
-  ['未完的旅程', 15734, 'exterior', 6.2, 'horizontal'],
+  ['未完的旅程', 11984, 'exterior', 4.7, 'horizontal'],
+  ['回望来路', 3750, 'exterior', 1.5, 'horizontal'],
 ] as const satisfies readonly [
   string,
   number,
@@ -60,7 +61,7 @@ const sceneDetails = [
 const boatSkins: readonly BoatSkin[] = [
   'paper', 'paper', 'paper', 'chalk', 'paper', 'paper',
   'paper', 'paper', 'paper', 'paper', 'paper', 'paper',
-  'paper', 'paper', 'paper', 'paper', 'ship', 'ship', 'ship',
+  'paper', 'paper', 'paper', 'paper', 'ship', 'ship', 'ship', 'ship',
 ]
 
 export const chronicleScenes: readonly ChronicleScene[] = sceneAssets.map(
@@ -91,6 +92,13 @@ export const chronicleScenes: readonly ChronicleScene[] = sceneAssets.map(
             contentHoldRatio: WINDOW_SCENE_CONTENT_HOLD_DURATION / duration,
             cameraRatio: 0,
             transitionRatio: 0,
+          }
+        : asset.id === 20
+        ? {
+            contentRevealRatio: 0,
+            contentHoldRatio: 0.12,
+            cameraRatio: 0.68,
+            transitionRatio: 0.2,
           }
         : index === 0
         ? {
