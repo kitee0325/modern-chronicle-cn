@@ -10,9 +10,9 @@ fast, automatic, uniform, seamless, and independent of scroll progress.
 
 - Export the referenced 39,631 x 810 Figma frame as a PNG at 2x resolution.
 - Preserve the 2x pixels, but split the 79,262 x 1,620 export into ordered,
-  lossless sequential tiles no wider than 4,096 px. Tile edges share no overlap
-  or gap, and concatenating the manifest in order must reproduce the export
-  pixel-for-pixel.
+  lossless sequential tiles: nineteen 4,096 px tiles followed by one 1,438 px
+  remainder tile. Tile edges share no overlap or gap, and concatenating the
+  manifest in order must reproduce the export pixel-for-pixel.
 - Add one decorative window-world layer inside `ChronicleCover`, aligned to the
   existing 9,535 x 1,620 cover panorama.
 - Reveal that layer only through the glass areas of the train windows. Keep the
@@ -22,6 +22,9 @@ fast, automatic, uniform, seamless, and independent of scroll progress.
   edge leaves the 9,535 px cover design space. Advance at exactly 1,800
   cover-design pixels per second and wrap the sequence position modulo 79,262;
   the last and first tile therefore meet without a blank frame or jump.
+  The remaining width of the current tile plus the next three tiles must always
+  cover at least 9,535 px; the specified partition has a 9,630 px worst-case
+  span, leaving a 95 px recycling guard band.
 - Keep the loop outside the GSAP scroll timeline. Scrolling may move and zoom
   the parent cover panorama, but it must not change the loop's elapsed time or
   speed.
@@ -83,5 +86,7 @@ fast, automatic, uniform, seamless, and independent of scroll progress.
   stationary first frame.
 - Confirm at most four panorama images are mounted and the maximum decoded 2x
   working set stays below 102 MiB.
+- Check every possible current-tile index and confirm the current remainder plus
+  three following tiles spans at least 9,535 px (minimum expected: 9,630 px).
 - Run the project build and lint checks, then inspect the opening in a browser at
   desktop and narrow viewport sizes.
