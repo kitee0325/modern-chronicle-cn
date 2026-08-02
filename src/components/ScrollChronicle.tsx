@@ -18,6 +18,7 @@ import {
   type CueTextBlock,
   type TextSceneCue,
 } from '../sceneCues'
+import { endingAssets } from '../endingAssets'
 import { readScene4Mask, type Scene4Mask } from '../scene4Mask'
 import { ChronicleBoat } from './ChronicleBoat'
 import { ChronicleCover } from './ChronicleCover'
@@ -55,10 +56,8 @@ const SCENE_03_CHANGED_HOLD_DURATION = 0.75
 const SCENE_03_PAN_OUT_DURATION = 0.86
 const WINDOW_PORTAL_SCENE_ID = 16
 const WINDOW_SCENE_CAMERA_END_PROGRESS = 0
-const ENDING_ENTRY_DURATION = 0.72
-const ENDING_START_HOLD_DURATION = 0.42
-const ENDING_SCROLL_DURATION = 3.4
-const ENDING_END_HOLD_DURATION = 0.72
+const ENDING_HOLD_DURATION = 4.54
+const FILM_PERFORATION_COUNT = 18
 const RAIN_DROP_COUNT = 84
 const STRONG_BOAT_BOB_SCENE_INDEX = 6
 const BOAT_BOB_ROTATION = 4.5
@@ -109,26 +108,77 @@ function ChronicleEnding() {
       data-ending-layer
       aria-labelledby="chronicle-ending-title"
     >
-      <div className="chronicle-ending__panel">
-        <h2 id="chronicle-ending-title">结语：</h2>
-        <div className="chronicle-ending__mask" data-ending-mask>
-          <div className="chronicle-ending__copy" data-ending-copy>
-            <p>时代改变了赵大春。而千千万万个像赵大春一样的普通人，共同书写了中国发展的历史。</p>
+      <div className="chronicle-ending__gallery" aria-hidden="true">
+        <div className="chronicle-ending__film">
+          <div className="chronicle-ending__perforations chronicle-ending__perforations--left">
+            {Array.from({ length: FILM_PERFORATION_COUNT }, (_, index) => <i key={index} />)}
+          </div>
+          <div className="chronicle-ending__perforations chronicle-ending__perforations--right">
+            {Array.from({ length: FILM_PERFORATION_COUNT }, (_, index) => <i key={index} />)}
+          </div>
+          <div className="chronicle-ending__film-track">
+            {[0, 1].map((cycle) => (
+              <img
+                className="chronicle-ending__film-reel"
+                src={endingAssets.reel}
+                alt=""
+                draggable={false}
+                decoding="async"
+                key={cycle}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div
+        className="chronicle-ending__story"
+        style={{
+          '--ending-background': `url(${endingAssets.background})`,
+        } as CSSProperties}
+      >
+        <h2 className="sr-only" id="chronicle-ending-title">
+          阿公的手稿：一名基层老党员与共和国同行的七十年
+        </h2>
+        <img
+          className="chronicle-ending__heading"
+          src={endingAssets.heading}
+          alt=""
+          draggable={false}
+        />
+
+        <div className="chronicle-ending__conclusion">
+          <h3>结语</h3>
+          <div className="chronicle-ending__copy">
+            <p>
+              时代改变了赵大春。
+              <br />
+              而千千万万个像赵大春一样的普通人，共同书写了中国发展的历史。
+            </p>
             <p>赵大春的一生，就像是在时代长河中不断航行的一叶小舟。百年来，风雨同舟，家国天下。</p>
             <p>
               他出生于军人家庭，先后经历抗日战争、解放战争与抗美援朝，身体里至今仍留有战争的弹片。他曾在饥荒与误诊中漂浮，在婚姻与生活的选择中挣扎，也曾在时代转折的浪潮中经历停滞与重启。
             </p>
             <p>
-              在来信中，他写道：“一个革命者，越是在惊涛骇浪中，越是需要钢铁意志，越是需要以一颗热忱、善良、道德的心待人。”
+              在来信中，他写道：“一个革命者，越是在惊涛骇浪中，越是需要钢铁意志，越是需要以一颗热忱、善良、道德的心待人。”作为一名几十年的老党员，面对时代洪流中个人有限的选择，他始终保持着面向人民的立场——在顺境与逆境之间维系责任，在个体命运与集体历史交汇的水域中，不失去人与人之间的连接。
             </p>
             <p>
-              作为一名几十年的老党员，面对时代洪流中个人有限的选择，他始终保持着面向人民的立场——在顺境与逆境之间维系责任，在个体命运与集体历史交汇的水域中，不失去人与人之间的连接。
+              面对时代洪流，个人的自处始终与人民的需要相互缠绕。正如他回忆录的最后一句话：
             </p>
-            <p>
-              面对时代洪流，个人的自处始终与人民的需要相互缠绕。正如他回忆录的最后一句话：“我们共产党人为人民服务，就是需要一颗真心真情。”
-            </p>
+            <blockquote className="chronicle-ending__quote">
+              “我们共产党人为人民服务，就是需要一颗真心真情。”
+            </blockquote>
           </div>
         </div>
+
+        <img
+          className="chronicle-ending__texture"
+          src={endingAssets.texture}
+          alt=""
+          aria-hidden="true"
+          draggable={false}
+          decoding="async"
+        />
       </div>
     </section>
   )
@@ -1392,8 +1442,6 @@ export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
       const prefaceMask = root.querySelector<HTMLElement>('[data-cover-preface-mask]')
       const prefaceCopy = root.querySelector<HTMLElement>('[data-cover-preface-copy]')
       const endingLayer = root.querySelector<HTMLElement>('[data-ending-layer]')
-      const endingMask = root.querySelector<HTMLElement>('[data-ending-mask]')
-      const endingCopy = root.querySelector<HTMLElement>('[data-ending-copy]')
       const rainLayer = root.querySelector<HTMLElement>('[data-rain]')
       const crossfadeSceneIndex = chronicleScenes.findIndex(
         (scene) => scene.id === CROSSFADE_SCENE_ID,
@@ -1419,8 +1467,7 @@ export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
       gsap.set(allSurfaces, { autoAlpha: 1, scale: 1, transformOrigin: '50% 46%' })
       gsap.set(allScrollCues, { autoAlpha: 0, y: 0 })
       gsap.set(initialCues, { autoAlpha: 1, y: 0 })
-      gsap.set(endingLayer, { autoAlpha: 0 })
-      gsap.set(endingCopy, { y: 0 })
+      gsap.set(endingLayer, { autoAlpha: 0, xPercent: 100 })
       gsap.set(boatSkins, { autoAlpha: 0 })
       gsap.set(boatViewport, { zIndex: 3, clipPath: 'none' })
       gsap.set(rainLayer, { autoAlpha: 0 })
@@ -1872,6 +1919,8 @@ export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
 
         if (scene.id === WINDOW_PORTAL_SCENE_ID) {
           timeline.set(boatSkins, { autoAlpha: 0 }, cursor)
+        } else if (chronicleScenes[index - 1]?.id === WINDOW_PORTAL_SCENE_ID) {
+          timeline.set(currentSkin, { autoAlpha: 1 }, cursor)
         } else if (index === BLACKBOARD_SCENE_INDEX) {
           timeline.set(boatViewport, {
             zIndex: 7,
@@ -2005,6 +2054,25 @@ export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
             coverMotion,
           )
 
+          if (nextScene.id === 20 && endingLayer) {
+            timeline.to(boatSkins, {
+              autoAlpha: 0,
+              duration: reducedMotion ? 0 : transitionDuration * 0.35,
+              ease: 'none',
+            }, transitionAt)
+
+            if (reducedMotion) {
+              timeline.set(endingLayer, { autoAlpha: 1, xPercent: 0 }, transitionAt)
+            } else {
+              timeline.set(endingLayer, { autoAlpha: 1, xPercent: 100 }, transitionAt)
+              timeline.to(endingLayer, {
+                xPercent: 0,
+                duration: transitionDuration,
+                ease: 'none',
+              }, transitionAt)
+            }
+          }
+
           if (index === 2) {
             timeline.to(boatSkins, {
               autoAlpha: 0,
@@ -2027,35 +2095,21 @@ export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
             duration: transitionDuration,
             ease: 'power1.in',
           }, transitionAt)
+        }
 
-          if (endingLayer) {
-            if (reducedMotion) {
-              timeline.set(endingLayer, { autoAlpha: 1 }, transitionAt + transitionDuration)
-            } else {
-              timeline.to(endingLayer, {
-                autoAlpha: 1,
-                duration: Math.min(ENDING_ENTRY_DURATION, transitionDuration),
-                ease: 'power1.inOut',
-              }, transitionAt)
-            }
-          }
+        if (!nextScene && endingLayer) {
+          timeline.set(endingLayer, { autoAlpha: 1, xPercent: 0 }, cursor)
+          timeline.set(boatSkins, { autoAlpha: 0 }, cursor)
         }
 
         cursor += scene.duration
       })
 
-      if (endingLayer && endingMask && endingCopy) {
+      if (endingLayer) {
         const endingTimelineStart = cursor
-        const endingScrollAt = cursor + ENDING_START_HOLD_DURATION
-        timeline.to(endingCopy, {
-          y: () => -Math.max(0, endingCopy.scrollHeight - endingMask.clientHeight),
-          duration: ENDING_SCROLL_DURATION,
-          ease: 'none',
-        }, endingScrollAt)
-
-        cursor = endingScrollAt + ENDING_SCROLL_DURATION + ENDING_END_HOLD_DURATION
+        cursor += ENDING_HOLD_DURATION
         addLegacyScrollDistance(endingTimelineStart, cursor - endingTimelineStart)
-        timeline.set(endingLayer, { autoAlpha: 1 }, cursor)
+        timeline.set(endingLayer, { autoAlpha: 1, xPercent: 0 }, cursor)
       }
 
       sceneStartsRef.current = sceneStarts

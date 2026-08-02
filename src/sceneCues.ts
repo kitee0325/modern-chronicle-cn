@@ -435,7 +435,7 @@ export const sceneCueManifests: readonly SceneCueManifest[] = [
     frameHeight: 810,
     cues: [
       textCue('s09-title', '76:10739', 'title', 73, 69, 280, 40, [
-        headingBlock('76:10739', '1949-1957', 0, 0, 280, 40, MUTED_PLUM),
+        headingBlock('76:10739', '1949-1957', 0, 0, 280, 40, BLACK),
       ]),
       singleTextCue(
         's09-copy',
@@ -446,7 +446,7 @@ export const sceneCueManifests: readonly SceneCueManifest[] = [
         354,
         127,
         '20世纪50年代初期，中国的婚姻选择深受家族结构与社会规范的裹挟。尽管《婚姻法》在法律层面上确立了婚姻自由与男女平等，但在日常生活的细节里，包办婚姻与媒妁之言依然根深蒂固。',
-        { color: MUTED_PLUM },
+        { color: BLACK },
       ),
     ],
   },

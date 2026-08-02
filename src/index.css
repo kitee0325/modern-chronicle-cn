@@ -492,7 +492,7 @@ select {
 
 .chronicle-cover__title {
   position: absolute;
-  top: 60.9%;
+  top: 50%;
   left: 1.4816%;
   width: 19%;
   margin: 0;
@@ -562,50 +562,168 @@ select {
   position: absolute;
   z-index: 24;
   inset: 0;
+  display: grid;
+  grid-template-columns: 40% 60%;
   overflow: hidden;
-  background:
-    linear-gradient(90deg, rgb(5 15 24 / 72%) 0%, rgb(5 15 24 / 86%) 48%, rgb(5 15 24 / 94%) 100%),
-    linear-gradient(180deg, rgb(5 15 24 / 12%) 0%, rgb(5 15 24 / 62%) 100%);
-  color: #fff;
+  background: rgb(18 78 132);
+  color: #f6edda;
+  font-size: min(1.1111vw, 1.9753vh);
   opacity: 0;
   pointer-events: none;
-  text-shadow: 0 1px 1px rgb(5 8 7 / 35%);
   visibility: hidden;
-  will-change: opacity;
+  will-change: opacity, transform;
 }
 
-.chronicle-ending__panel {
-  position: absolute;
-  top: 14%;
-  left: 57%;
-  width: 29%;
-}
-
-.chronicle-ending__panel h2 {
-  margin: 0 0 0.2em;
-  font-size: var(--chronicle-heading-size);
-  font-weight: 400;
-  line-height: var(--chronicle-heading-leading);
-}
-
-.chronicle-ending__mask {
-  height: 21em;
+.chronicle-ending__gallery {
+  position: relative;
   overflow: hidden;
-  font-size: var(--chronicle-copy-size);
-  line-height: var(--chronicle-copy-leading);
-  text-align: justify;
+  background: radial-gradient(
+    circle at center,
+    rgb(30 99 158) 0%,
+    rgb(18 78 132) 72%
+  );
+}
+
+.chronicle-ending__film {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #070707;
+}
+
+.chronicle-ending__perforations {
+  position: absolute;
+  z-index: 3;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 13%;
+  padding: 0.55em 0.2em;
+  background: #070707;
+}
+
+.chronicle-ending__perforations--left {
+  left: 0;
+}
+
+.chronicle-ending__perforations--right {
+  right: 0;
+}
+
+.chronicle-ending__perforations i {
+  display: block;
+  flex: 0 0 auto;
+  width: 3.1em;
+  height: 2.24em;
+  border-radius: 0.4em;
+  background: #505050;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 4%);
+}
+
+.chronicle-ending__film-track {
+  position: absolute;
+  top: 0;
+  right: 13%;
+  left: 13%;
+  display: flex;
+  flex-direction: column;
+  animation: chronicle-ending-film-roll 38s linear infinite;
+}
+
+.chronicle-ending__film-reel {
+  display: block;
+  flex: none;
+  width: 100%;
+  height: auto;
+  user-select: none;
+}
+
+@keyframes chronicle-ending-film-roll {
+  to {
+    transform: translate3d(0, -50%, 0);
+  }
+}
+
+.chronicle-ending__story {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background-color: rgb(18 78 132);
+  background-image:
+    linear-gradient(rgb(18 78 132 / 90%), rgb(18 78 132 / 90%)),
+    var(--ending-background);
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-blend-mode: normal;
+  border-left: 1px solid rgb(255 255 255 / 12%);
+}
+
+.chronicle-ending__heading {
+  position: absolute;
+  top: 6.5%;
+  left: 8%;
+  display: block;
+  width: 84%;
+  height: auto;
+  user-select: none;
+}
+
+.chronicle-ending__texture {
+  position: absolute;
+  z-index: 4;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  mix-blend-mode: screen;
+  pointer-events: none;
+  user-select: none;
+}
+
+.chronicle-ending__conclusion {
+  position: absolute;
+  top: 51%;
+  right: 8.5%;
+  bottom: 5.5%;
+  left: 9.5%;
+  overflow: hidden;
+  text-shadow: 0 1px 1px rgb(35 35 35 / 35%);
+}
+
+.chronicle-ending__conclusion h3 {
+  margin: 0 0 0.5em;
+  font-size: min(1.4vw, 2.4889vh);
+  font-weight: 400;
+  line-height: 1;
 }
 
 .chronicle-ending__copy {
-  will-change: transform;
+  font-size: min(0.78vw, 1.3867vh);
+  line-height: 1.68;
+  text-align: justify;
 }
 
 .chronicle-ending__copy p {
-  margin: 0 0 1em;
+  margin: 0 0 0.62em;
+  break-inside: avoid;
 }
 
 .chronicle-ending__copy p:last-child {
   margin-bottom: 0;
+}
+
+.chronicle-ending__quote {
+  margin: 1em 0 0;
+  font-size: 1.12em;
+  line-height: 1.65;
+  text-align: left;
+  break-inside: avoid;
 }
 
 .motion-debug {
@@ -946,6 +1064,11 @@ select {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .chronicle-ending__film-track {
+    animation: none;
+    transform: none;
+  }
+
   .chronicle-rain__drop {
     animation: none;
     transform: rotate(16deg);
