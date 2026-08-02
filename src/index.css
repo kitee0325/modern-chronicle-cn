@@ -457,10 +457,36 @@ select {
 }
 
 .chronicle-cover__art {
+  position: relative;
+  z-index: 1;
   display: block;
   width: 100%;
   max-width: none;
   height: 100%;
+  user-select: none;
+}
+
+.chronicle-cover__window-loop {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  overflow: hidden;
+  background: #cbd8dd;
+  pointer-events: none;
+}
+
+.chronicle-cover__window-track {
+  display: flex;
+  width: max-content;
+  height: 100%;
+  will-change: transform;
+}
+
+.chronicle-cover__window-tile {
+  display: block;
+  flex: none;
+  height: 100%;
+  object-fit: fill;
   user-select: none;
 }
 
@@ -473,6 +499,7 @@ select {
   opacity: 0;
   transform: translateY(12%);
   will-change: transform, opacity;
+  z-index: 2;
 }
 
 .chronicle-cover__title-art {
@@ -505,6 +532,7 @@ select {
   width: 21.6535%;
   color: #fff;
   text-shadow: 0 1px 1px rgb(5 8 7 / 35%);
+  z-index: 2;
 }
 
 .chronicle-cover__preface h2 {

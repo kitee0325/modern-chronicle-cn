@@ -8,23 +8,23 @@ fast, automatic, uniform, seamless, and independent of scroll progress.
 
 ## Confirmed design
 
-- Export the referenced 39,631 x 810 Figma frame as a PNG at 2x resolution.
-- Preserve the 2x pixels, but split the 79,262 x 1,620 export into ordered,
-  lossless sequential tiles: nineteen 4,096 px tiles followed by one 1,438 px
-  remainder tile. Tile edges share no overlap or gap, and concatenating the
-  manifest in order must reproduce the export pixel-for-pixel.
+- Use the supplied 32,768 x 670 transparent PNG exported from the referenced
+  Figma frame as the source of truth.
+- Split the source into eight ordered 4,096 x 670 tiles and encode them as WebP
+  at quality 88. Preserve the alpha channel losslessly; tile edges share no
+  overlap or gap.
 - Add one decorative window-world layer inside `ChronicleCover`, aligned to the
   existing 9,535 x 1,620 cover panorama.
 - Reveal that layer only through the glass areas of the train windows. Keep the
   existing train interior, seats, dividers, and window frames visually above it.
-- Render a bounded working set of the current tile and its next three neighbors.
+- Render a bounded working set of the current tile and its next neighbor.
   A time-based `requestAnimationFrame` loop recycles the tiles as their leading
   edge leaves the 9,535 px cover design space. Advance at exactly 1,800
-  cover-design pixels per second and wrap the sequence position modulo 79,262;
+  cover-design pixels per second and wrap the sequence position modulo the
+  rendered sequence width (approximately 79,230 px);
   the last and first tile therefore meet without a blank frame or jump.
-  The remaining width of the current tile plus the next three tiles must always
-  cover at least 9,535 px; the specified partition has a 9,630 px worst-case
-  span, leaving a 95 px recycling guard band.
+  Each rendered tile is approximately 9,904 px wide, so the next tile alone
+  covers the 9,535 px cover design space at a recycling boundary.
 - Keep the loop outside the GSAP scroll timeline. Scrolling may move and zoom
   the parent cover panorama, but it must not change the loop's elapsed time or
   speed.
@@ -36,7 +36,7 @@ fast, automatic, uniform, seamless, and independent of scroll progress.
 
 - `src/sceneAssets.ts` owns the exported window panorama tile URLs.
 - `src/components/CoverWindowLoop.tsx` owns the decorative loop, elapsed-time
-  position, four-tile working set, visibility lifecycle, and reduced-motion
+  position, two-tile working set, visibility lifecycle, and reduced-motion
   fallback. `ChronicleCover.tsx` only composes it into the cover.
 - `src/index.css` owns window clipping, coordinate sizing, and layer ordering.
 - `src/hooks/useAssetPreloader.ts` preloads only the first working set; remaining
@@ -50,20 +50,20 @@ fast, automatic, uniform, seamless, and independent of scroll progress.
   layer fills that coordinate space and is a child of the existing transformed
   panorama, so cover panning and zooming move the train and its outside world as
   one unit.
-- Display the 2x Figma export at its 79,262 x 1,620 natural design size. The
-  left edge is the sequence origin; only its animated x offset changes.
-- Define the visible glass apertures in a dedicated SVG mask using coordinates
-  measured from the existing cover artwork. The mask must exclude every frame,
-  divider, sill, and interior object, with no color bleed at any cover scale.
+- Scale the 32,768 x 670 source uniformly to 1,620 cover-design pixels high,
+  giving a rendered sequence width of `32,768 * 1,620 / 670` (approximately
+  79,230 px). The left edge is the sequence origin; only its animated x offset
+  changes.
+- Use the derived lossless `foreground-windowed.webp` as the foreground mask:
+  only glass pixels are transparent, while every frame, divider, sill, and
+  interior object remains above the moving panorama.
 
 ## Performance and accessibility
 
-- Tiles load as local static assets and retain the requested 2x source quality.
-  A 1x derivative manifest is used on narrow/coarse-pointer devices, while the
-  committed 2x export remains the desktop/high-density source.
-- Mount no more than four tiles at once. With 4,096 x 1,620 maximum 2x tiles,
-  the working set has a decoded RGBA budget below 102 MiB; verify the DOM never
-  grows beyond four panorama images during a complete cycle.
+- Tiles load as local static WebP assets. Quality 88 must keep representative
+  RGB PSNR above 40 dB and preserve the source alpha channel exactly.
+- Mount no more than two 4,096 x 670 source tiles at once, keeping the decoded
+  RGBA working set below 21 MiB.
 - The animated element uses transform-only motion and `will-change: transform`;
   React state changes only when a tile boundary is crossed, not on every frame.
 - The layer is decorative (`aria-hidden`) and cannot receive pointer events.
@@ -72,9 +72,10 @@ fast, automatic, uniform, seamless, and independent of scroll progress.
 
 ## Verification
 
-- Confirm the Figma export is 2x and tile boundaries reconstruct the full frame.
-- Confirm every 2x tile is at most 4,096 px wide, manifests are ordered, and the
-  narrow-screen source is the exact 1x derivative of the 2x export.
+- Confirm the supplied export is 32,768 x 670 and the eight 4,096 x 670 tiles
+  cover its full width in order.
+- Confirm representative RGB PSNR is above 40 dB, alpha is unchanged, and total
+  compressed tile size is materially below the 12.45 MB source.
 - Confirm the landscape appears only inside window glass and stays aligned while
   the cover pans.
 - Confirm the motion continues at the same speed while scrolling stops, moves
@@ -84,9 +85,9 @@ fast, automatic, uniform, seamless, and independent of scroll progress.
   speed is 1,800 cover-design pixels per second, independent of scroll state.
 - Confirm the loop pauses after the cover is hidden and reduced-motion shows the
   stationary first frame.
-- Confirm at most four panorama images are mounted and the maximum decoded 2x
-  working set stays below 102 MiB.
-- Check every possible current-tile index and confirm the current remainder plus
-  three following tiles spans at least 9,535 px (minimum expected: 9,630 px).
+- Confirm at most two panorama images are mounted and the maximum decoded
+  working set stays below 21 MiB.
+- Confirm one full rendered tile is wider than the 9,535 px cover design space,
+  so recycling never reveals a gap.
 - Run the project build and lint checks, then inspect the opening in a browser at
   desktop and narrow viewport sizes.

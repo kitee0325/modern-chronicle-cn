@@ -1,6 +1,11 @@
 import { useEffect, useState } from 'react'
 import { sceneCueManifests } from '../sceneCues'
-import { coverAssets, sceneAssets, type SceneAsset } from '../sceneAssets'
+import {
+  coverAssets,
+  coverWindowPanorama,
+  sceneAssets,
+  type SceneAsset,
+} from '../sceneAssets'
 
 const CRITICAL_SCENE_COUNT = 3
 const CRITICAL_PROGRESS_LIMIT = 95
@@ -124,8 +129,12 @@ function preloadFontOnce() {
 }
 
 function createCriticalTasks(): AssetTask[] {
+  const windowPanoramaUrls = coverWindowPanorama.tiles
+    .slice(0, 2)
+    .map((tile) => tile.src)
+
   return [
-    ...criticalImageUrls.map((url) => {
+    ...unique([...criticalImageUrls, ...windowPanoramaUrls]).map((url) => {
       const key = `image:${url}`
       return { key, url, promise: preloadImageOnce(url) }
     }),

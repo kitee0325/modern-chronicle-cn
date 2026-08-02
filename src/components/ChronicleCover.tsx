@@ -1,9 +1,11 @@
 import { coverAssets } from '../sceneAssets'
+import { CoverWindowLoop } from './CoverWindowLoop'
 
 export function ChronicleCover() {
   return (
     <div className="chronicle-cover" data-cover-layer>
       <div className="chronicle-cover__panorama" data-cover-panorama>
+        <CoverWindowLoop />
         <img
           className="chronicle-cover__art"
           src={coverAssets.foreground}

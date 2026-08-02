@@ -34,8 +34,28 @@ const sceneAssetUrl = (
 }
 
 export const coverAssets = {
-  foreground: `${import.meta.env.BASE_URL}assets/cover/foreground.png`,
+  foreground: `${import.meta.env.BASE_URL}assets/cover/foreground-windowed.webp`,
   title: `${import.meta.env.BASE_URL}assets/cover/title.png`,
+} as const
+
+const coverWindowSourceHeight = 670
+const coverWindowTileSourceWidth = 4096
+const coverWindowTileCount = 8
+const coverWindowTileWidth = coverWindowTileSourceWidth
+  * 1620 / coverWindowSourceHeight
+
+export const coverWindowPanorama = {
+  width: coverWindowTileWidth * coverWindowTileCount,
+  height: 1_620,
+  speed: 1_800,
+  tiles: Array.from({ length: coverWindowTileCount }, (_, index) => {
+    const name = String(index).padStart(2, '0')
+    return {
+      width: coverWindowTileWidth,
+      start: coverWindowTileWidth * index,
+      src: `${import.meta.env.BASE_URL}assets/cover/window-panorama/tile-${name}.webp`,
+    }
+  }),
 } as const
 
 export const sceneAssets = [
