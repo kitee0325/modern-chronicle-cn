@@ -1,4 +1,4 @@
-export type BoatSkin = 'paper' | 'chalk' | 'ship'
+export type BoatSkin = 'paper' | 'chalk'
 
 const boatAsset = (file: string) =>
   `${import.meta.env.BASE_URL}assets/boats/${file}`
@@ -6,7 +6,6 @@ const boatAsset = (file: string) =>
 const skins: Record<BoatSkin, { body: string }> = {
   paper: { body: boatAsset('paper-boat.png') },
   chalk: { body: boatAsset('chalk-boat.png') },
-  ship: { body: boatAsset('ship.png') },
 }
 
 export function ChronicleBoat() {

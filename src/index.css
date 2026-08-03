@@ -395,15 +395,6 @@ select {
   transform-origin: 50% 70%;
 }
 
-.chronicle-boat__skin--ship {
-  top: 50%;
-  left: 50%;
-  width: min(43.6vw, 628px);
-  height: auto;
-  aspect-ratio: 777 / 539;
-  transform: translate(-42%, -58%);
-}
-
 .chronicle--static {
   min-height: 100vh;
 }
@@ -688,7 +679,7 @@ select {
 
 .chronicle-ending__conclusion {
   position: absolute;
-  top: 51%;
+  top: 46%;
   right: 8.5%;
   bottom: 5.5%;
   left: 9.5%;
@@ -698,13 +689,13 @@ select {
 
 .chronicle-ending__conclusion h3 {
   margin: 0 0 0.5em;
-  font-size: min(1.4vw, 2.4889vh);
+  font-size: min(2vw, 3.5556vh);
   font-weight: 400;
   line-height: 1;
 }
 
 .chronicle-ending__copy {
-  font-size: min(0.78vw, 1.3867vh);
+  font-size: min(1.08vw, 1.92vh);
   line-height: 1.68;
   text-align: justify;
 }
@@ -720,8 +711,6 @@ select {
 
 .chronicle-ending__quote {
   margin: 1em 0 0;
-  font-size: 1.12em;
-  line-height: 1.65;
   text-align: left;
   break-inside: avoid;
 }

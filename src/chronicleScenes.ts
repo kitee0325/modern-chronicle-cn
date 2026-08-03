@@ -61,7 +61,7 @@ const sceneDetails = [
 const boatSkins: readonly BoatSkin[] = [
   'paper', 'paper', 'paper', 'chalk', 'paper', 'paper',
   'paper', 'paper', 'paper', 'paper', 'paper', 'paper',
-  'paper', 'paper', 'paper', 'paper', 'paper', 'ship', 'ship', 'ship',
+  'paper', 'paper', 'paper', 'paper', 'paper', 'paper', 'paper', 'paper',
 ]
 
 export const chronicleScenes: readonly ChronicleScene[] = sceneAssets.map(

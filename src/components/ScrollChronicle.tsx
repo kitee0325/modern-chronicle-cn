@@ -1619,15 +1619,6 @@ export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
           ease: 'sine.inOut',
           transformOrigin: '50% 78%',
         })
-        gsap.to('.chronicle-boat__skin--ship .chronicle-boat__bob', {
-          rotation: 0.8,
-          y: -4,
-          duration: 1.6,
-          yoyo: true,
-          repeat: -1,
-          ease: 'sine.inOut',
-          transformOrigin: '50% 78%',
-        })
       }
 
       const timeline = gsap.timeline({ defaults: { ease: 'none' } })
