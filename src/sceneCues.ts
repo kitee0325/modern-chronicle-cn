@@ -13,6 +13,11 @@ export type CueMode = 'initial' | 'scroll'
 export type CueTextAlign = 'left' | 'center' | 'justify'
 export type CueTextRole = 'heading' | 'body' | 'source' | 'caption'
 
+export type CueTextAnnotation = {
+  term: string
+  content: string
+}
+
 export type CueTextBlock = {
   figmaNodeId: string
   text: string
@@ -25,6 +30,7 @@ export type CueTextBlock = {
   color: string
   align: CueTextAlign
   role: CueTextRole
+  annotations?: readonly CueTextAnnotation[]
 }
 
 type BaseSceneCue = {
@@ -68,8 +74,6 @@ export type SceneCueManifest = {
 
 const WHITE = '#fff'
 const BLACK = '#000'
-const NIGHT_GOLD = '#cbb28e'
-const MUTED_PLUM = '#804e5c'
 
 const illustrationAsset = (name: string) =>
   `${import.meta.env.BASE_URL}assets/illustrations/${name}.png`
@@ -91,6 +95,7 @@ type TextBlockOptions = {
   color?: string
   align?: CueTextAlign
   role?: CueTextRole
+  annotations?: readonly CueTextAnnotation[]
 }
 
 const textBlock = (
@@ -113,6 +118,7 @@ const textBlock = (
   color: options.color ?? BLACK,
   align: options.align ?? 'justify',
   role: options.role ?? 'body',
+  annotations: options.annotations,
 })
 
 const headingBlock = (
@@ -412,21 +418,19 @@ export const sceneCueManifests: readonly SceneCueManifest[] = [
     figmaFrameId: '76:10299',
     frameHeight: 810,
     cues: [
+      textCue('s08-title', '76:10411', 'title', 203, 50, 280, 40, [
+        headingBlock('76:10411-title', '1949-1957', 0, 0, 280, 40, WHITE),
+      ]),
       singleTextCue(
         's08-copy',
         '76:10411',
         'copy',
         203,
-        50,
-        802,
-        384,
-        '在这样的境遇下，消沉的赵大春回到了家乡。\n最终，他接受了父母之命、媒妁之言，\n与一位农村姑娘结了婚。',
-        {
-          fontSize: 32,
-          lineHeight: 70,
-          color: NIGHT_GOLD,
-          align: 'left',
-        },
+        147,
+        354,
+        72,
+        '在这样的境遇下，消沉的赵大春回到了家乡。\n最终，他接受了父母之命、媒妁之言，与一位农村姑娘结了婚。',
+        { color: WHITE },
       ),
     ],
   },
@@ -446,7 +450,19 @@ export const sceneCueManifests: readonly SceneCueManifest[] = [
         354,
         127,
         '20世纪50年代初期，中国的婚姻选择深受家族结构与社会规范的裹挟。尽管《婚姻法》在法律层面上确立了婚姻自由与男女平等，但在日常生活的细节里，包办婚姻与媒妁之言依然根深蒂固。',
-        { color: BLACK },
+        {
+          color: BLACK,
+          annotations: [
+            {
+              term: '婚姻法',
+              content: '1950年颁布的《中华人民共和国婚姻法》是新中国第一部婚姻立法，确立了婚姻自由、一夫一妻、男女平等的原则，旨在废除包办婚姻和封建婚姻制度。',
+            },
+            {
+              term: '包办婚姻',
+              content: '指由父母或家族主导安排的婚姻，而非由当事人自主决定。尽管1950年代法律已确立婚姻自由原则，但包办婚姻在实际生活中仍长期存在。',
+            },
+          ],
+        },
       ),
     ],
   },
@@ -455,7 +471,7 @@ export const sceneCueManifests: readonly SceneCueManifest[] = [
     frameHeight: 810,
     cues: [
       textCue('s10-copy', '76:11710', 'copy', 102, 77, 566, 235, [
-        headingBlock('76:11711', '1949-1957', 0, 0, 280, 40, MUTED_PLUM),
+        headingBlock('76:11711', '1949-1957', 0, 0, 280, 40, BLACK),
         textBlock(
           '76:11712',
           '在当时的择偶标准中，个人的情感往往要让位于“可靠性”与“稳定性”——是否老实本分、性格温和、是否符合家庭与社会的期待，往往更具决定性意义。 “家庭成分好”、“政治上无风险”，成了人们心中秘而不宣、却决定生死的隐性硬标准。',
@@ -463,10 +479,36 @@ export const sceneCueManifests: readonly SceneCueManifest[] = [
           108,
           562,
           127,
-          { color: MUTED_PLUM },
+          {
+            color: BLACK,
+            annotations: [{
+              term: '家庭成分好',
+              content: '指对个人家庭的政治与社会阶级划分（如工人、贫农、地主、资本家等），在过去极大地影响个人的升学、就业、婚姻等人生机遇。',
+            }],
+          },
         ),
       ]),
-      chartCue('s10-chart', '265:4833', 1150.5, 103, 1685, 707),
+      chartCue('s10-chart', '76:11535', 1150.5, 103, 1685, 707),
+      textCue('s10-chart-caption', '444:7', 'copy', 1151, 117, 343, 84, [
+        textBlock(
+          '444:7',
+          '1948-1966年中国择偶标准情况',
+          0,
+          0,
+          259,
+          22,
+          { fontSize: 14, lineHeight: 22, align: 'left' },
+        ),
+        textBlock(
+          '444:11',
+          '注释：从左到右五朵花分别对应人们在“政治社会条件”“生理条件”“物质条件”“人品个性”“双方的相容互补”这五个方面的择偶偏好。',
+          0,
+          28,
+          343,
+          56,
+          { fontSize: 10, lineHeight: 20 },
+        ),
+      ]),
       textCue('s10-source', '76:11717', 'source', 0, 740, 2834, 70, [
         textBlock(
           '76:11719',
@@ -475,7 +517,7 @@ export const sceneCueManifests: readonly SceneCueManifest[] = [
           23,
           1485,
           24,
-          { color: WHITE, role: 'source' },
+          { color: BLACK, role: 'source' },
         ),
       ]),
     ],
@@ -516,6 +558,22 @@ export const sceneCueManifests: readonly SceneCueManifest[] = [
           20,
           587,
           169,
+          {
+            annotations: [
+              {
+                term: '大跃进',
+                content: '1958年至1960年间开展的经济运动，旨在通过群众动员实现工农业生产的超高速增长。由于目标脱离实际、虚报浮夸成风，最终导致严重的经济困难。',
+              },
+              {
+                term: '反右倾',
+                content: '1959年发动的一场政治运动，批判所谓“右倾机会主义”，打断了此前纠正“左”倾错误的努力，使错误延续，加剧了经济困难。',
+              },
+              {
+                term: '三年困难时期',
+                content: '指1959年至1961年中国经历的严重困难时期。期间连续遭受旱灾、洪涝等自然灾害，加之政策失误，导致粮食严重短缺和经济陷入困境。',
+              },
+            ],
+          },
         ),
         textBlock(
           '76:11961',
@@ -543,6 +601,12 @@ export const sceneCueManifests: readonly SceneCueManifest[] = [
           89,
           705,
           96,
+          {
+            annotations: [{
+              term: '公共食堂',
+              content: '指1950年代末农村人民公社建立的集体就餐制度，由公共食堂统一做饭、分配食物，体现了当时高度集体化的生产与生活方式。',
+            }],
+          },
         ),
       ]),
       textCue('s11-copy-5', '76:11960', 'copy', 4350, 53, 500, 629, [
@@ -619,6 +683,12 @@ export const sceneCueManifests: readonly SceneCueManifest[] = [
           0,
           651,
           144,
+          {
+            annotations: [{
+              term: '上山下乡',
+              content: '该运动始于1955年，1960年代末达到高峰。国家号召城镇知识青年到农村和边疆地区插队落户，累计超过1600万青年被下放，涉及约十分之一城镇人口，是现代史上规模最大的城乡人口迁移之一。',
+            }],
+          },
         ),
       ]),
       textCue('s13-copy-3', '76:12721', 'copy', 3253, 73, 760, 196, [
@@ -687,7 +757,13 @@ export const sceneCueManifests: readonly SceneCueManifest[] = [
           76,
           518,
           84,
-          { lineHeight: 28 },
+          {
+            lineHeight: 28,
+            annotations: [{
+              term: '改革开放',
+              content: '1978年12月十一届三中全会后启动的国内改革和对外开放政策，标志着中国从计划经济向市场经济转型，被广泛视为中国现代化进程的关键转折点。',
+            }],
+          },
         ),
       ]),
     ],

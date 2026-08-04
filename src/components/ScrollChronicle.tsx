@@ -1,4 +1,17 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
+import {
+  FloatingPortal,
+  autoUpdate,
+  flip,
+  offset,
+  shift,
+  useDismiss,
+  useFloating,
+  useFocus,
+  useHover,
+  useInteractions,
+  useRole,
+} from '@floating-ui/react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import {
@@ -15,6 +28,7 @@ import {
   normalizeCueValue,
   sceneCueManifests,
   type ChartSceneCue,
+  type CueTextAnnotation,
   type CueTextBlock,
   type TextSceneCue,
 } from '../sceneCues'
@@ -254,6 +268,83 @@ function getCueTextBlockStyle(
   }
 }
 
+function AnnotatedTerm({ annotation }: { annotation: CueTextAnnotation }) {
+  const [isOpen, setIsOpen] = useState(false)
+  const { refs: floatingRefs, floatingStyles, context } = useFloating({
+    open: isOpen,
+    onOpenChange: setIsOpen,
+    placement: 'top',
+    middleware: [offset(10), flip(), shift({ padding: 12 })],
+    whileElementsMounted: autoUpdate,
+  })
+  const hover = useHover(context, { move: false })
+  const focus = useFocus(context)
+  const dismiss = useDismiss(context)
+  const role = useRole(context, { role: 'tooltip' })
+  const { getReferenceProps, getFloatingProps } = useInteractions([
+    hover,
+    focus,
+    dismiss,
+    role,
+  ])
+
+  return (
+    <>
+      <span
+        className="chronicle-annotation"
+        ref={(node) => floatingRefs.setReference(node)}
+        tabIndex={0}
+        {...getReferenceProps()}
+      >
+        {annotation.term}
+      </span>
+      <FloatingPortal>
+        <span
+          aria-hidden={!isOpen}
+          className="chronicle-annotation__tooltip"
+          ref={(node) => floatingRefs.setFloating(node)}
+          style={{
+            ...floatingStyles,
+            visibility: isOpen ? 'visible' : 'hidden',
+          }}
+          {...getFloatingProps()}
+        >
+          {annotation.content}
+        </span>
+      </FloatingPortal>
+    </>
+  )
+}
+
+function CueBlockText({ block }: { block: CueTextBlock }) {
+  if (!block.annotations?.length) return block.text
+
+  const annotations = block.annotations
+    .map((annotation) => ({
+      annotation,
+      index: block.text.indexOf(annotation.term),
+    }))
+    .filter(({ index }) => index >= 0)
+    .sort((left, right) => left.index - right.index)
+
+  if (!annotations.length) return block.text
+
+  const parts: React.ReactNode[] = []
+  let cursor = 0
+
+  annotations.forEach(({ annotation, index }) => {
+    if (index < cursor) return
+    if (index > cursor) parts.push(block.text.slice(cursor, index))
+    parts.push(
+      <AnnotatedTerm annotation={annotation} key={`${annotation.term}-${index}`} />,
+    )
+    cursor = index + annotation.term.length
+  })
+  if (cursor < block.text.length) parts.push(block.text.slice(cursor))
+
+  return parts
+}
+
 function CueText({ cue }: { cue: TextSceneCue }) {
   return (
     <div className="chronicle-cue__text">
@@ -267,7 +358,7 @@ function CueText({ cue }: { cue: TextSceneCue }) {
             key={block.figmaNodeId}
             style={getCueTextBlockStyle(cue, block)}
           >
-            {block.text}
+            <CueBlockText block={block} />
           </Tag>
         )
       })}
