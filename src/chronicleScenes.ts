@@ -49,7 +49,7 @@ const sceneDetails = [
   ['水面之上', 3844, 'exterior', 2.6, 'surface'],
   ['驶向当下', 7968, 'interior', 3.8, 'dive'],
   ['未完的旅程', 11984, 'exterior', 4.7, 'horizontal'],
-  ['回望来路', 2880, 'exterior', 1.5, 'horizontal'],
+  ['回望来路', 2880, 'exterior', 0, 'horizontal'],
 ] as const satisfies readonly [
   string,
   number,

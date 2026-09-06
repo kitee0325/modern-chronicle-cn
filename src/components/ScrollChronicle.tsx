@@ -70,7 +70,6 @@ const SCENE_03_CHANGED_HOLD_DURATION = 0.75
 const SCENE_03_PAN_OUT_DURATION = 0.86
 const WINDOW_PORTAL_SCENE_ID = 16
 const WINDOW_SCENE_CAMERA_END_PROGRESS = 0
-const ENDING_HOLD_DURATION = 4.54
 const FILM_PERFORATION_COUNT = 18
 const RAIN_DROP_COUNT = 84
 const STRONG_BOAT_BOB_SCENE_INDEX = 6
@@ -1269,6 +1268,20 @@ export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
   const activeSceneRef = useRef(initialScene)
   const [activeScene, setActiveScene] = useState(initialScene)
 
+  useEffect(() => {
+    const shell = rootRef.current?.closest<HTMLElement>('.app-shell')
+    if (!shell) return
+
+    const refreshAfterShellEntry = (event: TransitionEvent) => {
+      if (event.target === shell && event.propertyName === 'transform') {
+        ScrollTrigger.refresh()
+      }
+    }
+
+    shell.addEventListener('transitionend', refreshAfterShellEntry)
+    return () => shell.removeEventListener('transitionend', refreshAfterShellEntry)
+  }, [])
+
   const jumpToSceneStart = (sceneNumber: number) => {
     const timeline = timelineRef.current
     const trigger = scrollTriggerRef.current
@@ -2186,13 +2199,6 @@ export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
 
         cursor += scene.duration
       })
-
-      if (endingLayer) {
-        const endingTimelineStart = cursor
-        cursor += ENDING_HOLD_DURATION
-        addLegacyScrollDistance(endingTimelineStart, cursor - endingTimelineStart)
-        timeline.set(endingLayer, { autoAlpha: 1, xPercent: 0 }, cursor)
-      }
 
       sceneStartsRef.current = sceneStarts
       if (timelineProbe) {
