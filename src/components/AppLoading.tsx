@@ -7,6 +7,7 @@ type AppLoadingProps = {
   phase: LoadingPhase
   progress: number
   reducedMotion: boolean
+  mobile: boolean
   onRevealStateChange: (state: RevealState) => void
 }
 
@@ -14,6 +15,7 @@ export function AppLoading({
   phase,
   progress,
   reducedMotion,
+  mobile,
   onRevealStateChange,
 }: AppLoadingProps) {
   const visualProgress = Math.min(100, Math.max(0, progress))
@@ -42,20 +44,23 @@ export function AppLoading({
       aria-valuemin={0}
       aria-valuemax={100}
       aria-valuenow={accessibleProgress}
+      data-mobile={mobile ? 'true' : undefined}
     >
-      <div className="app-loading__scene">
-        <LoadingCity
-          progress={visualProgress}
-          reducedMotion={reducedMotion}
-          onRevealStateChange={onRevealStateChange}
-        />
+      <div className="app-loading__plane">
+        <div className="app-loading__scene">
+          <LoadingCity
+            progress={visualProgress}
+            reducedMotion={reducedMotion}
+            onRevealStateChange={onRevealStateChange}
+          />
 
-        <p className="app-loading__status" aria-hidden="true">加载中</p>
+          <p className="app-loading__status" aria-hidden="true">加载中</p>
+        </div>
+
+        <p className="app-loading__fullscreen-hint">
+          强烈推荐全屏访问，按 <kbd>F11</kbd> 开启全屏
+        </p>
       </div>
-
-      <p className="app-loading__fullscreen-hint">
-        强烈推荐全屏访问，按 <kbd>F11</kbd> 开启全屏
-      </p>
     </div>
   )
 }

@@ -1,0 +1,1634 @@
+{
+  "baselineCommit": "c4532d629c6ac20b6cd04acabaebf8675a06badf",
+  "browser": "Chrome desktop, touch disabled",
+  "tolerance": {
+    "geometryPx": 0.05,
+    "opacity": 0.001
+  },
+  "cases": [
+    {
+      "scene": 1,
+      "progress": 0.2,
+      "width": 1440,
+      "height": 810,
+      "mobile": "false",
+      "duration": 68.81,
+      "time": 6.6499999999999995,
+      "cues": 2,
+      "blocks": 65,
+      "differences": [],
+      "status": "passed"
+    },
+    {
+      "scene": 1,
+      "progress": 0.8,
+      "width": 1440,
+      "height": 810,
+      "mobile": "false",
+      "duration": 68.81,
+      "time": 8.33,
+      "cues": 2,
+      "blocks": 65,
+      "differences": [],
+      "status": "passed"
+    },
+    {
+      "scene": 2,
+      "progress": 0.2,
+      "width": 1440,
+      "height": 810,
+      "mobile": "false",
+      "duration": 68.81,
+      "time": 9.77,
+      "cues": 4,
+      "blocks": 65,
+      "differences": [],
+      "status": "passed"
+    },
+    {
+      "scene": 2,
+      "progress": 0.8,
+      "width": 1440,
+      "height": 810,
+      "mobile": "false",
+      "duration": 68.81,
+      "time": 12.41,
+      "cues": 4,
+      "blocks": 65,
+      "differences": [],
+      "status": "passed"
+    },
+    {
+      "scene": 3,
+      "progress": 0.2,
+      "width": 1440,
+      "height": 810,
+      "mobile": "false",
+      "duration": 68.81,
+      "time": 14.330000000000002,
+      "cues": 2,
+      "blocks": 65,
+      "differences": [],
+      "status": "passed"
+    },
+    {
+      "scene": 3,
+      "progress": 0.8,
+      "width": 1440,
+      "height": 810,
+      "mobile": "false",
+      "duration": 68.81,
+      "time": 17.450000000000003,
+      "cues": 2,
+      "blocks": 65,
+      "differences": [],
+      "status": "passed"
+    },
+    {
+      "scene": 4,
+      "progress": 0.2,
+      "width": 1440,
+      "height": 810,
+      "mobile": "false",
+      "duration": 68.81,
+      "time": 19.250000000000004,
+      "cues": 3,
+      "blocks": 65,
+      "differences": [],
+      "status": "passed"
+    },
+    {
+      "scene": 4,
+      "progress": 0.8,
+      "width": 1440,
+      "height": 810,
+      "mobile": "false",
+      "duration": 68.81,
+      "time": 21.53,
+      "cues": 3,
+      "blocks": 65,
+      "differences": [],
+      "status": "passed"
+    },
+    {
+      "scene": 5,
+      "progress": 0.2,
+      "width": 1440,
+      "height": 810,
+      "mobile": "false",
+      "duration": 68.81,
+      "time": 22.730000000000004,
+      "cues": 1,
+      "blocks": 65,
+      "differences": [],
+      "status": "passed"
+    },
+    {
+      "scene": 5,
+      "progress": 0.8,
+      "width": 1440,
+      "height": 810,
+      "mobile": "false",
+      "duration": 68.81,
+      "time": 24.050000000000004,
+      "cues": 1,
+      "blocks": 65,
+      "differences": [],
+      "status": "passed"
+    },
+    {
+      "scene": 6,
+      "progress": 0.2,
+      "width": 1440,
+      "height": 810,
+      "mobile": "false",
+      "duration": 68.81,
+      "time": 24.930000000000003,
+      "cues": 4,
+      "blocks": 65,
+      "differences": [],
+      "status": "passed"
+    },
+    {
+      "scene": 6,
+      "progress": 0.8,
+      "width": 1440,
+      "height": 810,
+      "mobile": "false",
+      "duration": 68.81,
+      "time": 26.250000000000004,
+      "cues": 4,
+      "blocks": 65,
+      "differences": [],
+      "status": "passed"
+    },
+    {
+      "scene": 7,
+      "progress": 0.2,
+      "width": 1440,
+      "height": 810,
+      "mobile": "false",
+      "duration": 68.81,
+      "time": 27.25,
+      "cues": 2,
+      "blocks": 65,
+      "differences": [],
+      "status": "passed"
+    },
+    {
+      "scene": 7,
+      "progress": 0.8,
+      "width": 1440,
+      "height": 810,
+      "mobile": "false",
+      "duration": 68.81,
+      "time": 28.93,
+      "cues": 2,
+      "blocks": 65,
+      "differences": [],
+      "status": "passed"
+    },
+    {
+      "scene": 8,
+      "progress": 0.2,
+      "width": 1440,
+      "height": 810,
+      "mobile": "false",
+      "duration": 68.81,
+      "time": 30.05,
+      "cues": 2,
+      "blocks": 65,
+      "differences": [],
+      "status": "passed"
+    },
+    {
+      "scene": 8,
+      "progress": 0.8,
+      "width": 1440,
+      "height": 810,
+      "mobile": "false",
+      "duration": 68.81,
+      "time": 31.73,
+      "cues": 2,
+      "blocks": 65,
+      "differences": [],
+      "status": "passed"
+    },
+    {
+      "scene": 9,
+      "progress": 0.2,
+      "width": 1440,
+      "height": 810,
+      "mobile": "false",
+      "duration": 68.81,
+      "time": 32.73,
+      "cues": 2,
+      "blocks": 65,
+      "differences": [],
+      "status": "passed"
+    },
+    {
+      "scene": 9,
+      "progress": 0.8,
+      "width": 1440,
+      "height": 810,
+      "mobile": "false",
+      "duration": 68.81,
+      "time": 34.05,
+      "cues": 2,
+      "blocks": 65,
+      "differences": [],
+      "status": "passed"
+    },
+    {
+      "scene": 10,
+      "progress": 0.2,
+      "width": 1440,
+      "height": 810,
+      "mobile": "false",
+      "duration": 68.81,
+      "time": 35.21,
+      "cues": 4,
+      "blocks": 65,
+      "differences": [],
+      "status": "passed"
+    },
+    {
+      "scene": 10,
+      "progress": 0.8,
+      "width": 1440,
+      "height": 810,
+      "mobile": "false",
+      "duration": 68.81,
+      "time": 37.370000000000005,
+      "cues": 4,
+      "blocks": 65,
+      "differences": [],
+      "status": "passed"
+    },
+    {
+      "scene": 11,
+      "progress": 0.2,
+      "width": 1440,
+      "height": 810,
+      "mobile": "false",
+      "duration": 68.81,
+      "time": 39.17,
+      "cues": 9,
+      "blocks": 65,
+      "differences": [],
+      "status": "passed"
+    },
+    {
+      "scene": 11,
+      "progress": 0.8,
+      "width": 1440,
+      "height": 810,
+      "mobile": "false",
+      "duration": 68.81,
+      "time": 42.41,
+      "cues": 9,
+      "blocks": 65,
+      "differences": [],
+      "status": "passed"
+    },
+    {
+      "scene": 12,
+      "progress": 0.2,
+      "width": 1440,
+      "height": 810,
+      "mobile": "false",
+      "duration": 68.81,
+      "time": 44.010000000000005,
+      "cues": 1,
+      "blocks": 65,
+      "differences": [],
+      "status": "passed"
+    },
+    {
+      "scene": 12,
+      "progress": 0.8,
+      "width": 1440,
+      "height": 810,
+      "mobile": "false",
+      "duration": 68.81,
+      "time": 45.57,
+      "cues": 1,
+      "blocks": 65,
+      "differences": [],
+      "status": "passed"
+    },
+    {
+      "scene": 13,
+      "progress": 0.2,
+      "width": 1440,
+      "height": 810,
+      "mobile": "false",
+      "duration": 68.81,
+      "time": 46.99,
+      "cues": 6,
+      "blocks": 65,
+      "differences": [],
+      "status": "passed"
+    },
+    {
+      "scene": 13,
+      "progress": 0.8,
+      "width": 1440,
+      "height": 810,
+      "mobile": "false",
+      "duration": 68.81,
+      "time": 49.690000000000005,
+      "cues": 6,
+      "blocks": 65,
+      "differences": [],
+      "status": "passed"
+    },
+    {
+      "scene": 14,
+      "progress": 0.2,
+      "width": 1440,
+      "height": 810,
+      "mobile": "false",
+      "duration": 68.81,
+      "time": 51.23,
+      "cues": 3,
+      "blocks": 65,
+      "differences": [],
+      "status": "passed"
+    },
+    {
+      "scene": 14,
+      "progress": 0.8,
+      "width": 1440,
+      "height": 810,
+      "mobile": "false",
+      "duration": 68.81,
+      "time": 53.150000000000006,
+      "cues": 3,
+      "blocks": 65,
+      "differences": [],
+      "status": "passed"
+    },
+    {
+      "scene": 15,
+      "progress": 0.2,
+      "width": 1440,
+      "height": 810,
+      "mobile": "false",
+      "duration": 68.81,
+      "time": 54.43000000000001,
+      "cues": 1,
+      "blocks": 65,
+      "differences": [],
+      "status": "passed"
+    },
+    {
+      "scene": 15,
+      "progress": 0.8,
+      "width": 1440,
+      "height": 810,
+      "mobile": "false",
+      "duration": 68.81,
+      "time": 56.35000000000001,
+      "cues": 1,
+      "blocks": 65,
+      "differences": [],
+      "status": "passed"
+    },
+    {
+      "scene": 16,
+      "progress": 0.2,
+      "width": 1440,
+      "height": 810,
+      "mobile": "false",
+      "duration": 68.81,
+      "time": 57.13400000000001,
+      "cues": 2,
+      "blocks": 65,
+      "differences": [],
+      "status": "passed"
+    },
+    {
+      "scene": 16,
+      "progress": 0.8,
+      "width": 1440,
+      "height": 810,
+      "mobile": "false",
+      "duration": 68.81,
+      "time": 57.56600000000001,
+      "cues": 2,
+      "blocks": 65,
+      "differences": [],
+      "status": "passed"
+    },
+    {
+      "scene": 17,
+      "progress": 0.2,
+      "width": 1440,
+      "height": 810,
+      "mobile": "false",
+      "duration": 68.81,
+      "time": 58.23000000000001,
+      "cues": 5,
+      "blocks": 65,
+      "differences": [],
+      "status": "passed"
+    },
+    {
+      "scene": 17,
+      "progress": 0.8,
+      "width": 1440,
+      "height": 810,
+      "mobile": "false",
+      "duration": 68.81,
+      "time": 59.790000000000006,
+      "cues": 5,
+      "blocks": 65,
+      "differences": [],
+      "status": "passed"
+    },
+    {
+      "scene": 18,
+      "progress": 0.2,
+      "width": 1440,
+      "height": 810,
+      "mobile": "false",
+      "duration": 68.81,
+      "time": 61.07000000000001,
+      "cues": 3,
+      "blocks": 65,
+      "differences": [],
+      "status": "passed"
+    },
+    {
+      "scene": 18,
+      "progress": 0.8,
+      "width": 1440,
+      "height": 810,
+      "mobile": "false",
+      "duration": 68.81,
+      "time": 63.35000000000001,
+      "cues": 3,
+      "blocks": 65,
+      "differences": [],
+      "status": "passed"
+    },
+    {
+      "scene": 19,
+      "progress": 0.2,
+      "width": 1440,
+      "height": 810,
+      "mobile": "false",
+      "duration": 68.81,
+      "time": 65.05000000000001,
+      "cues": 6,
+      "blocks": 65,
+      "differences": [
+        {
+          "path": "probe.cues.0.opacity",
+          "before": "0.0469279",
+          "after": "0.0465461"
+        },
+        {
+          "path": "probe.cues.0.transform",
+          "before": "matrix(1, 0, 0, 1, 0, 9.53072)",
+          "after": "matrix(1, 0, 0, 1, 0, 9.53454)"
+        }
+      ],
+      "status": "passed-after-css-animation",
+      "note": "Initial CSS animation is sampled before completion by the development probe; see stableScene19 for settled DOM comparison."
+    },
+    {
+      "scene": 19,
+      "progress": 0.8,
+      "width": 1440,
+      "height": 810,
+      "mobile": "false",
+      "duration": 68.81,
+      "time": 67.87000000000002,
+      "cues": 6,
+      "blocks": 65,
+      "differences": [
+        {
+          "path": "probe.cues.0.opacity",
+          "before": "0.0467065",
+          "after": "0.0468449"
+        },
+        {
+          "path": "probe.cues.0.transform",
+          "before": "matrix(1, 0, 0, 1, 0, 9.53293)",
+          "after": "matrix(1, 0, 0, 1, 0, 9.53155)"
+        }
+      ],
+      "status": "passed-after-css-animation",
+      "note": "Initial CSS animation is sampled before completion by the development probe; see stableScene19 for settled DOM comparison."
+    },
+    {
+      "scene": 20,
+      "progress": 0.2,
+      "width": 1440,
+      "height": 810,
+      "mobile": "false",
+      "duration": 68.81,
+      "time": 68.81000000000002,
+      "cues": 0,
+      "blocks": 65,
+      "differences": [],
+      "status": "passed"
+    },
+    {
+      "scene": 20,
+      "progress": 0.8,
+      "width": 1440,
+      "height": 810,
+      "mobile": "false",
+      "duration": 68.81,
+      "time": 68.81000000000002,
+      "cues": 0,
+      "blocks": 65,
+      "differences": [],
+      "status": "passed"
+    },
+    {
+      "scene": 20,
+      "progress": 1,
+      "width": 1440,
+      "height": 810,
+      "mobile": "false",
+      "duration": 68.81,
+      "time": 68.81000000000002,
+      "cues": 0,
+      "blocks": 65,
+      "differences": [],
+      "status": "passed"
+    },
+    {
+      "scene": 1,
+      "progress": 0.7,
+      "width": 1920,
+      "height": 1080,
+      "mobile": "false",
+      "duration": 68.81,
+      "time": 8.049999999999999,
+      "cues": 2,
+      "blocks": 65,
+      "differences": [],
+      "status": "passed"
+    },
+    {
+      "scene": 3,
+      "progress": 0.7,
+      "width": 1920,
+      "height": 1080,
+      "mobile": "false",
+      "duration": 68.81,
+      "time": 16.93,
+      "cues": 2,
+      "blocks": 65,
+      "differences": [],
+      "status": "passed"
+    },
+    {
+      "scene": 10,
+      "progress": 0.7,
+      "width": 1920,
+      "height": 1080,
+      "mobile": "false",
+      "duration": 68.81,
+      "time": 37.010000000000005,
+      "cues": 4,
+      "blocks": 65,
+      "differences": [],
+      "status": "passed"
+    },
+    {
+      "scene": 17,
+      "progress": 0.7,
+      "width": 1920,
+      "height": 1080,
+      "mobile": "false",
+      "duration": 68.81,
+      "time": 59.53000000000001,
+      "cues": 5,
+      "blocks": 65,
+      "differences": [],
+      "status": "passed"
+    },
+    {
+      "scene": 20,
+      "progress": 1,
+      "width": 1920,
+      "height": 1080,
+      "mobile": "false",
+      "duration": 68.81,
+      "time": 68.81000000000002,
+      "cues": 0,
+      "blocks": 65,
+      "differences": [],
+      "status": "passed"
+    },
+    {
+      "scene": 1,
+      "progress": 0.7,
+      "width": 1366,
+      "height": 768,
+      "mobile": "false",
+      "duration": 68.81,
+      "time": 8.049999999999999,
+      "cues": 2,
+      "blocks": 65,
+      "differences": [],
+      "status": "passed"
+    },
+    {
+      "scene": 3,
+      "progress": 0.7,
+      "width": 1366,
+      "height": 768,
+      "mobile": "false",
+      "duration": 68.81,
+      "time": 16.93,
+      "cues": 2,
+      "blocks": 65,
+      "differences": [],
+      "status": "passed"
+    },
+    {
+      "scene": 10,
+      "progress": 0.7,
+      "width": 1366,
+      "height": 768,
+      "mobile": "false",
+      "duration": 68.81,
+      "time": 37.010000000000005,
+      "cues": 4,
+      "blocks": 65,
+      "differences": [],
+      "status": "passed"
+    },
+    {
+      "scene": 17,
+      "progress": 0.7,
+      "width": 1366,
+      "height": 768,
+      "mobile": "false",
+      "duration": 68.81,
+      "time": 59.53000000000001,
+      "cues": 5,
+      "blocks": 65,
+      "differences": [],
+      "status": "passed"
+    },
+    {
+      "scene": 20,
+      "progress": 1,
+      "width": 1366,
+      "height": 768,
+      "mobile": "false",
+      "duration": 68.81,
+      "time": 68.81000000000002,
+      "cues": 0,
+      "blocks": 65,
+      "differences": [],
+      "status": "passed"
+    },
+    {
+      "scene": 19,
+      "progress": 0.2,
+      "width": 1440,
+      "height": 810,
+      "mobile": "false",
+      "duration": 68.81,
+      "time": 65.05000000000001,
+      "cues": 6,
+      "blocks": 65,
+      "differences": [
+        {
+          "path": "probe.cues.0.opacity",
+          "before": "0.842352",
+          "after": "0.0393722"
+        },
+        {
+          "path": "probe.cues.0.rect.bottom",
+          "before": 811.58,
+          "after": 819.61
+        },
+        {
+          "path": "probe.cues.0.rect.frameY",
+          "before": 1.58,
+          "after": 9.61
+        },
+        {
+          "path": "probe.cues.0.rect.y",
+          "before": 1.58,
+          "after": 9.61
+        },
+        {
+          "path": "probe.cues.0.transform",
+          "before": "matrix(1, 0, 0, 1, 0, 1.57648)",
+          "after": "matrix(1, 0, 0, 1, 0, 9.60628)"
+        },
+        {
+          "path": "probe.images.1.rect.bottom",
+          "before": 811.58,
+          "after": 819.61
+        },
+        {
+          "path": "probe.images.1.rect.frameY",
+          "before": 1.58,
+          "after": 9.61
+        },
+        {
+          "path": "probe.images.1.rect.y",
+          "before": 1.58,
+          "after": 9.61
+        }
+      ],
+      "status": "passed-after-css-animation",
+      "note": "Initial CSS animation is sampled before completion by the development probe; see stableScene19 for settled DOM comparison."
+    }
+  ],
+  "baselineRepeatDiff": [
+    {
+      "path": "probe.cues.0.opacity",
+      "before": "0.842352",
+      "after": "0.0469611"
+    },
+    {
+      "path": "probe.cues.0.rect.bottom",
+      "before": 811.58,
+      "after": 819.53
+    },
+    {
+      "path": "probe.cues.0.rect.frameY",
+      "before": 1.58,
+      "after": 9.53
+    },
+    {
+      "path": "probe.cues.0.rect.y",
+      "before": 1.58,
+      "after": 9.53
+    },
+    {
+      "path": "probe.cues.0.transform",
+      "before": "matrix(1, 0, 0, 1, 0, 1.57648)",
+      "after": "matrix(1, 0, 0, 1, 0, 9.53039)"
+    },
+    {
+      "path": "probe.images.1.rect.bottom",
+      "before": 811.58,
+      "after": 819.53
+    },
+    {
+      "path": "probe.images.1.rect.frameY",
+      "before": 1.58,
+      "after": 9.53
+    },
+    {
+      "path": "probe.images.1.rect.y",
+      "before": 1.58,
+      "after": 9.53
+    }
+  ],
+  "loading": {
+    "before": [
+      {
+        "display": "grid",
+        "font": "16px",
+        "height": 810,
+        "selector": ".app-loading",
+        "width": 1440,
+        "x": 0,
+        "y": 0
+      },
+      {
+        "display": "block",
+        "font": "16px",
+        "height": 626.1953125,
+        "selector": ".app-loading__scene",
+        "width": 1120,
+        "x": 160,
+        "y": 91.8984375
+      },
+      {
+        "display": "block",
+        "font": "16px",
+        "height": 459.1953125,
+        "selector": ".loading-city",
+        "width": 1120,
+        "x": 160,
+        "y": 139.8984375
+      },
+      {
+        "display": "block",
+        "font": "21.6px",
+        "height": 47,
+        "selector": ".app-loading__status",
+        "width": 974.3984375,
+        "x": 232.796875,
+        "y": 623.09375
+      },
+      {
+        "display": "block",
+        "font": "15.2px",
+        "height": 17,
+        "selector": ".app-loading__fullscreen-hint",
+        "width": 283.1796875,
+        "x": 578.41015625,
+        "y": 760.6015625
+      }
+    ],
+    "after": [
+      {
+        "display": "grid",
+        "font": "16px",
+        "height": 810,
+        "selector": ".app-loading",
+        "width": 1440,
+        "x": 0,
+        "y": 0
+      },
+      {
+        "display": "block",
+        "font": "16px",
+        "height": 626.1953125,
+        "selector": ".app-loading__scene",
+        "width": 1120,
+        "x": 160,
+        "y": 91.8984375
+      },
+      {
+        "display": "block",
+        "font": "16px",
+        "height": 459.1953125,
+        "selector": ".loading-city",
+        "width": 1120,
+        "x": 160,
+        "y": 139.8984375
+      },
+      {
+        "display": "block",
+        "font": "21.6px",
+        "height": 47,
+        "selector": ".app-loading__status",
+        "width": 974.3984375,
+        "x": 232.796875,
+        "y": 623.09375
+      },
+      {
+        "display": "block",
+        "font": "15.2px",
+        "height": 17,
+        "selector": ".app-loading__fullscreen-hint",
+        "width": 283.1796875,
+        "x": 578.41015625,
+        "y": 760.6015625
+      }
+    ],
+    "differences": []
+  },
+  "input": [
+    {
+      "step": "loaded",
+      "before": {
+        "frame": {
+          "bottom": 810,
+          "frameX": null,
+          "frameY": null,
+          "height": 810,
+          "right": 1440,
+          "width": 1440,
+          "x": 0,
+          "y": 0
+        },
+        "mobile": "false",
+        "scene": 1,
+        "scrollHeight": 66962,
+        "scrollY": 0,
+        "timeline": {
+          "duration": 68.81,
+          "progress": 0,
+          "time": 0.000001
+        },
+        "trigger": {
+          "end": 66152,
+          "progress": 0,
+          "start": 0
+        },
+        "viewport": {
+          "devicePixelRatio": 1,
+          "height": 810,
+          "width": 1440
+        }
+      },
+      "after": {
+        "frame": {
+          "bottom": 810,
+          "frameX": null,
+          "frameY": null,
+          "height": 810,
+          "right": 1440,
+          "width": 1440,
+          "x": 0,
+          "y": 0
+        },
+        "mobile": "false",
+        "scene": 1,
+        "scrollHeight": 66962,
+        "scrollY": 0,
+        "timeline": {
+          "duration": 68.81,
+          "progress": 0,
+          "time": 0.000001
+        },
+        "trigger": {
+          "end": 66152,
+          "progress": 0,
+          "start": 0
+        },
+        "viewport": {
+          "devicePixelRatio": 1,
+          "height": 810,
+          "width": 1440
+        }
+      },
+      "differences": []
+    },
+    {
+      "step": "wheel down 900",
+      "before": {
+        "frame": {
+          "bottom": 810,
+          "frameX": null,
+          "frameY": null,
+          "height": 810,
+          "right": 1440,
+          "width": 1440,
+          "x": 0,
+          "y": 0
+        },
+        "mobile": "false",
+        "scene": 1,
+        "scrollHeight": 66962,
+        "scrollY": 900,
+        "timeline": {
+          "duration": 68.81,
+          "progress": 0.015379,
+          "time": 1.058208
+        },
+        "trigger": {
+          "end": 66152,
+          "progress": 0.013605,
+          "start": 0
+        },
+        "viewport": {
+          "devicePixelRatio": 1,
+          "height": 810,
+          "width": 1440
+        }
+      },
+      "after": {
+        "frame": {
+          "bottom": 810,
+          "frameX": null,
+          "frameY": null,
+          "height": 810,
+          "right": 1440,
+          "width": 1440,
+          "x": 0,
+          "y": 0
+        },
+        "mobile": "false",
+        "scene": 1,
+        "scrollHeight": 66962,
+        "scrollY": 900,
+        "timeline": {
+          "duration": 68.81,
+          "progress": 0.015379,
+          "time": 1.058208
+        },
+        "trigger": {
+          "end": 66152,
+          "progress": 0.013605,
+          "start": 0
+        },
+        "viewport": {
+          "devicePixelRatio": 1,
+          "height": 810,
+          "width": 1440
+        }
+      },
+      "differences": []
+    },
+    {
+      "step": "wheel up 400",
+      "before": {
+        "frame": {
+          "bottom": 810,
+          "frameX": null,
+          "frameY": null,
+          "height": 810,
+          "right": 1440,
+          "width": 1440,
+          "x": 0,
+          "y": 0
+        },
+        "mobile": "false",
+        "scene": 1,
+        "scrollHeight": 66962,
+        "scrollY": 500,
+        "timeline": {
+          "duration": 68.81,
+          "progress": 0.008544,
+          "time": 0.587894
+        },
+        "trigger": {
+          "end": 66152,
+          "progress": 0.007558,
+          "start": 0
+        },
+        "viewport": {
+          "devicePixelRatio": 1,
+          "height": 810,
+          "width": 1440
+        }
+      },
+      "after": {
+        "frame": {
+          "bottom": 810,
+          "frameX": null,
+          "frameY": null,
+          "height": 810,
+          "right": 1440,
+          "width": 1440,
+          "x": 0,
+          "y": 0
+        },
+        "mobile": "false",
+        "scene": 1,
+        "scrollHeight": 66962,
+        "scrollY": 500,
+        "timeline": {
+          "duration": 68.81,
+          "progress": 0.008544,
+          "time": 0.587894
+        },
+        "trigger": {
+          "end": 66152,
+          "progress": 0.007558,
+          "start": 0
+        },
+        "viewport": {
+          "devicePixelRatio": 1,
+          "height": 810,
+          "width": 1440
+        }
+      },
+      "differences": []
+    },
+    {
+      "step": "jump to 10",
+      "before": {
+        "frame": {
+          "bottom": 810,
+          "frameX": null,
+          "frameY": null,
+          "height": 810,
+          "right": 1440,
+          "width": 1440,
+          "x": 0,
+          "y": 0
+        },
+        "mobile": "false",
+        "scene": 10,
+        "scrollHeight": 66962,
+        "scrollY": 29994,
+        "timeline": {
+          "duration": 68.81,
+          "progress": 0.501246,
+          "time": 34.490744
+        },
+        "trigger": {
+          "end": 66152,
+          "progress": 0.45341,
+          "start": 0
+        },
+        "viewport": {
+          "devicePixelRatio": 1,
+          "height": 810,
+          "width": 1440
+        }
+      },
+      "after": {
+        "frame": {
+          "bottom": 810,
+          "frameX": null,
+          "frameY": null,
+          "height": 810,
+          "right": 1440,
+          "width": 1440,
+          "x": 0,
+          "y": 0
+        },
+        "mobile": "false",
+        "scene": 10,
+        "scrollHeight": 66962,
+        "scrollY": 29994,
+        "timeline": {
+          "duration": 68.81,
+          "progress": 0.501246,
+          "time": 34.490744
+        },
+        "trigger": {
+          "end": 66152,
+          "progress": 0.45341,
+          "start": 0
+        },
+        "viewport": {
+          "devicePixelRatio": 1,
+          "height": 810,
+          "width": 1440
+        }
+      },
+      "differences": []
+    },
+    {
+      "step": "resize to 1920x1080",
+      "before": {
+        "frame": {
+          "bottom": 1080,
+          "frameX": null,
+          "frameY": null,
+          "height": 1080,
+          "right": 1920,
+          "width": 1920,
+          "x": 0,
+          "y": 0
+        },
+        "mobile": "false",
+        "scene": 10,
+        "scrollHeight": 89283,
+        "scrollY": 39992,
+        "timeline": {
+          "duration": 68.81,
+          "progress": 0.501243,
+          "time": 34.490533
+        },
+        "trigger": {
+          "end": 88203,
+          "progress": 0.453409,
+          "start": 0
+        },
+        "viewport": {
+          "devicePixelRatio": 1,
+          "height": 1080,
+          "width": 1920
+        }
+      },
+      "after": {
+        "frame": {
+          "bottom": 1080,
+          "frameX": null,
+          "frameY": null,
+          "height": 1080,
+          "right": 1920,
+          "width": 1920,
+          "x": 0,
+          "y": 0
+        },
+        "mobile": "false",
+        "scene": 10,
+        "scrollHeight": 89283,
+        "scrollY": 39992,
+        "timeline": {
+          "duration": 68.81,
+          "progress": 0.501243,
+          "time": 34.490533
+        },
+        "trigger": {
+          "end": 88203,
+          "progress": 0.453409,
+          "start": 0
+        },
+        "viewport": {
+          "devicePixelRatio": 1,
+          "height": 1080,
+          "width": 1920
+        }
+      },
+      "differences": []
+    },
+    {
+      "step": "wheel after resize",
+      "before": {
+        "frame": {
+          "bottom": 1080,
+          "frameX": null,
+          "frameY": null,
+          "height": 1080,
+          "right": 1920,
+          "width": 1920,
+          "x": 0,
+          "y": 0
+        },
+        "mobile": "false",
+        "scene": 10,
+        "scrollHeight": 89283,
+        "scrollY": 40492,
+        "timeline": {
+          "duration": 68.81,
+          "progress": 0.507651,
+          "time": 34.931451
+        },
+        "trigger": {
+          "end": 88203,
+          "progress": 0.459077,
+          "start": 0
+        },
+        "viewport": {
+          "devicePixelRatio": 1,
+          "height": 1080,
+          "width": 1920
+        }
+      },
+      "after": {
+        "frame": {
+          "bottom": 1080,
+          "frameX": null,
+          "frameY": null,
+          "height": 1080,
+          "right": 1920,
+          "width": 1920,
+          "x": 0,
+          "y": 0
+        },
+        "mobile": "false",
+        "scene": 10,
+        "scrollHeight": 89283,
+        "scrollY": 40492,
+        "timeline": {
+          "duration": 68.81,
+          "progress": 0.507651,
+          "time": 34.931451
+        },
+        "trigger": {
+          "end": 88203,
+          "progress": 0.459077,
+          "start": 0
+        },
+        "viewport": {
+          "devicePixelRatio": 1,
+          "height": 1080,
+          "width": 1920
+        }
+      },
+      "differences": []
+    },
+    {
+      "step": "resize to 1366x768",
+      "before": {
+        "frame": {
+          "bottom": 768,
+          "frameX": null,
+          "frameY": null,
+          "height": 768,
+          "right": 1365.66,
+          "width": 1365.33,
+          "x": 0.34,
+          "y": 0
+        },
+        "mobile": "false",
+        "scene": 10,
+        "scrollHeight": 63494,
+        "scrollY": 28796,
+        "timeline": {
+          "duration": 68.81,
+          "progress": 0.507645,
+          "time": 34.931081
+        },
+        "trigger": {
+          "end": 62726,
+          "progress": 0.459076,
+          "start": 0
+        },
+        "viewport": {
+          "devicePixelRatio": 1,
+          "height": 768,
+          "width": 1366
+        }
+      },
+      "after": {
+        "frame": {
+          "bottom": 768,
+          "frameX": null,
+          "frameY": null,
+          "height": 768,
+          "right": 1365.66,
+          "width": 1365.33,
+          "x": 0.34,
+          "y": 0
+        },
+        "mobile": "false",
+        "scene": 10,
+        "scrollHeight": 63494,
+        "scrollY": 28796,
+        "timeline": {
+          "duration": 68.81,
+          "progress": 0.507645,
+          "time": 34.931081
+        },
+        "trigger": {
+          "end": 62726,
+          "progress": 0.459076,
+          "start": 0
+        },
+        "viewport": {
+          "devicePixelRatio": 1,
+          "height": 768,
+          "width": 1366
+        }
+      },
+      "differences": []
+    }
+  ],
+  "annotation": [
+    {
+      "version": "before",
+      "point": {
+        "inert": false,
+        "tag": "SPAN",
+        "x": 571.1953125,
+        "y": 209.3984375
+      },
+      "tooltip": {
+        "font": "13px",
+        "text": "指对个人家庭的政治与社会阶级划分（如工人、贫农、地主、资本家等），在过去极大地影响个人的升学、就业、婚姻等人生机遇。",
+        "visibility": "visible"
+      }
+    },
+    {
+      "version": "after",
+      "point": {
+        "inert": false,
+        "tag": "SPAN",
+        "x": 571.1953125,
+        "y": 209.3984375
+      },
+      "tooltip": {
+        "font": "13px",
+        "text": "指对个人家庭的政治与社会阶级划分（如工人、贫农、地主、资本家等），在过去极大地影响个人的升学、就业、婚姻等人生机遇。",
+        "visibility": "visible"
+      }
+    }
+  ],
+  "stableScene19": [
+    {
+      "progress": 0.2,
+      "before": [
+        {
+          "height": 810,
+          "id": "s19-chart",
+          "opacity": "1",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "width": 3151,
+          "x": 0,
+          "y": 0
+        },
+        {
+          "height": 40,
+          "id": "s19-title",
+          "opacity": "1",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "width": 439,
+          "x": 161.9921875,
+          "y": 41
+        },
+        {
+          "height": 71.9921875,
+          "id": "s19-copy1",
+          "opacity": "1",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "width": 663,
+          "x": 161.9921875,
+          "y": 137
+        },
+        {
+          "height": 48,
+          "id": "s19-copy2",
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "width": 726,
+          "x": 1627,
+          "y": 48
+        },
+        {
+          "height": 94,
+          "id": "s19-copy3",
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "width": 726,
+          "x": 5199,
+          "y": 89
+        },
+        {
+          "height": 70,
+          "id": "s19-source",
+          "opacity": "1",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "width": 3589,
+          "x": 0,
+          "y": 740
+        }
+      ],
+      "after": [
+        {
+          "height": 810,
+          "id": "s19-chart",
+          "opacity": "1",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "width": 3151,
+          "x": 0,
+          "y": 0
+        },
+        {
+          "height": 40,
+          "id": "s19-title",
+          "opacity": "1",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "width": 439,
+          "x": 161.9921875,
+          "y": 41
+        },
+        {
+          "height": 71.9921875,
+          "id": "s19-copy1",
+          "opacity": "1",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "width": 663,
+          "x": 161.9921875,
+          "y": 137
+        },
+        {
+          "height": 48,
+          "id": "s19-copy2",
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "width": 726,
+          "x": 1627,
+          "y": 48
+        },
+        {
+          "height": 94,
+          "id": "s19-copy3",
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "width": 726,
+          "x": 5199,
+          "y": 89
+        },
+        {
+          "height": 70,
+          "id": "s19-source",
+          "opacity": "1",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "width": 3589,
+          "x": 0,
+          "y": 740
+        }
+      ],
+      "differences": []
+    },
+    {
+      "progress": 0.8,
+      "before": [
+        {
+          "height": 810,
+          "id": "s19-chart",
+          "opacity": "1",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "width": 3151,
+          "x": -4156.17578125,
+          "y": 0
+        },
+        {
+          "height": 40,
+          "id": "s19-title",
+          "opacity": "1",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "width": 439,
+          "x": -3994.18359375,
+          "y": 41
+        },
+        {
+          "height": 71.9921875,
+          "id": "s19-copy1",
+          "opacity": "1",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "width": 663,
+          "x": -3994.18359375,
+          "y": 137
+        },
+        {
+          "height": 48,
+          "id": "s19-copy2",
+          "opacity": "1",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "width": 726,
+          "x": -2529.17578125,
+          "y": 48
+        },
+        {
+          "height": 94,
+          "id": "s19-copy3",
+          "opacity": "0.6527",
+          "transform": "matrix(1, 0, 0, 1, 0, 4.8618)",
+          "width": 726,
+          "x": 1042.82421875,
+          "y": 93.86180114746094
+        },
+        {
+          "height": 70,
+          "id": "s19-source",
+          "opacity": "1",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "width": 3589,
+          "x": -4156.17578125,
+          "y": 740
+        }
+      ],
+      "after": [
+        {
+          "height": 810,
+          "id": "s19-chart",
+          "opacity": "1",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "width": 3151,
+          "x": -4156.17578125,
+          "y": 0
+        },
+        {
+          "height": 40,
+          "id": "s19-title",
+          "opacity": "1",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "width": 439,
+          "x": -3994.18359375,
+          "y": 41
+        },
+        {
+          "height": 71.9921875,
+          "id": "s19-copy1",
+          "opacity": "1",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "width": 663,
+          "x": -3994.18359375,
+          "y": 137
+        },
+        {
+          "height": 48,
+          "id": "s19-copy2",
+          "opacity": "1",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "width": 726,
+          "x": -2529.17578125,
+          "y": 48
+        },
+        {
+          "height": 94,
+          "id": "s19-copy3",
+          "opacity": "0.6527",
+          "transform": "matrix(1, 0, 0, 1, 0, 4.8618)",
+          "width": 726,
+          "x": 1042.82421875,
+          "y": 93.86180114746094
+        },
+        {
+          "height": 70,
+          "id": "s19-source",
+          "opacity": "1",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "width": 3589,
+          "x": -4156.17578125,
+          "y": 740
+        }
+      ],
+      "differences": []
+    }
+  ],
+  "notes": [
+    "Scene 19 initial chart uses existing 700ms chronicle-title-enter CSS animation in both baseline and current code. The debug probe freezes its initial wall-clock snapshot before this animation completes. Raw differences were reproduced within baseline reloads. Stable DOM measurements after animation.finished match at both timeline sample points."
+  ],
+  "result": {
+    "pcRegression": "No regression found in tested desktop Chrome cases",
+    "loadingPassed": true,
+    "inputPassed": true,
+    "stableScene19Passed": true,
+    "unverified": [
+      "Safari",
+      "Firefox",
+      "Physical mobile devices",
+      "All-frame pixel comparison"
+    ]
+  }
+}

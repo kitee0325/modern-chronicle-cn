@@ -1,0 +1,32 @@
+[
+  {
+    "step": "start",
+    "left": 0,
+    "rotation": "0",
+    "top": 0
+  },
+  {
+    "step": "landscape forward",
+    "left": 301.5,
+    "rotation": "0",
+    "top": 0
+  },
+  {
+    "step": "landscape back",
+    "left": 150.5,
+    "rotation": "0",
+    "top": 0
+  },
+  {
+    "step": "rotate",
+    "left": 0,
+    "rotation": "90",
+    "top": 151
+  },
+  {
+    "step": "portrait forward",
+    "left": 0,
+    "rotation": "90",
+    "top": 302.5
+  }
+]

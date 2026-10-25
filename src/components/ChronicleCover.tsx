@@ -1,11 +1,11 @@
 import { coverAssets } from '../sceneAssets'
 import { CoverWindowLoop } from './CoverWindowLoop'
 
-export function ChronicleCover() {
+export function ChronicleCover({ mobile }: { mobile: boolean }) {
   return (
     <div className="chronicle-cover" data-cover-layer>
       <div className="chronicle-cover__panorama" data-cover-panorama>
-        <CoverWindowLoop />
+        <CoverWindowLoop mobile={mobile} />
         <img
           className="chronicle-cover__art"
           src={coverAssets.foreground}

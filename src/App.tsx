@@ -3,6 +3,7 @@ import { AppLoading, type LoadingPhase } from './components/AppLoading'
 import { ScrollChronicle } from './components/ScrollChronicle'
 import { Scene4MaskEditor } from './components/Scene4MaskEditor'
 import type { RevealState } from './components/LoadingCity'
+import { useChronicleViewport } from './hooks/useChronicleViewport'
 import { useAssetPreloader } from './hooks/useAssetPreloader'
 import { usePrefersReducedMotion } from './hooks/usePrefersReducedMotion'
 
@@ -14,6 +15,7 @@ function App() {
     || (import.meta.env.DEV && params.get('skipLoading') === '1')
   const { progress } = useAssetPreloader(!bypassLoading && !isScene4MaskEditor)
   const reducedMotion = usePrefersReducedMotion()
+  const chronicleViewport = useChronicleViewport()
   const [phase, setPhase] = useState<LoadingPhase>(bypassLoading ? 'content' : 'loading')
   const [revealState, setRevealState] = useState<RevealState>({
     isIdle: false,
@@ -65,12 +67,17 @@ function App() {
   if (isScene4MaskEditor) return <Scene4MaskEditor />
 
   return (
-    <>
+    <div
+      className="app-viewport"
+      data-mobile={chronicleViewport.mobile ? 'true' : undefined}
+      data-rotation={chronicleViewport.mobile ? chronicleViewport.rotation : undefined}
+    >
       {phase !== 'content' && (
         <AppLoading
           phase={phase}
           progress={progress}
           reducedMotion={reducedMotion}
+          mobile={chronicleViewport.mobile}
           onRevealStateChange={handleRevealStateChange}
         />
       )}
@@ -80,9 +87,15 @@ function App() {
         aria-hidden={!contentIsInteractive}
         inert={!contentIsInteractive}
       >
-        <ScrollChronicle reducedMotion={reducedMotion} />
+        <ScrollChronicle
+          reducedMotion={reducedMotion}
+          isInteractive={contentIsInteractive}
+          mobile={chronicleViewport.mobile}
+          scrollAxis={chronicleViewport.scrollAxis}
+          viewportKey={`${chronicleViewport.mobile ? 'mobile' : 'desktop'}-${chronicleViewport.rotation}`}
+        />
       </main>
-    </>
+    </div>
   )
 }
 

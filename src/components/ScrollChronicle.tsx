@@ -5,6 +5,7 @@ import {
   flip,
   offset,
   shift,
+  useClick,
   useDismiss,
   useFloating,
   useFocus,
@@ -12,6 +13,7 @@ import {
   useInteractions,
   useRole,
 } from '@floating-ui/react'
+import { createPortal } from 'react-dom'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import {
@@ -19,6 +21,10 @@ import {
   type ChronicleScene,
   type NarrativeTrack,
 } from '../chronicleScenes'
+import {
+  getScrollProgress,
+  type ChronicleScrollAxis,
+} from '../chronicleViewport'
 import {
   readCoverMotionConfig,
   type CoverMotionConfig,
@@ -37,6 +43,7 @@ import { readScene4Mask, type Scene4Mask } from '../scene4Mask'
 import { ChronicleBoat } from './ChronicleBoat'
 import { ChronicleCover } from './ChronicleCover'
 import { CoverMotionDebugPanel } from './CoverMotionDebugPanel'
+import { chartDescriptions } from '../chartDescriptions'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -95,16 +102,19 @@ function isSceneInAssetWindow(sceneIndex: number, activeScene: number) {
   return Math.abs(sceneIndex - activeScene) <= ASSET_WINDOW_RADIUS
 }
 
-function ChronicleRain() {
+function ChronicleRain({ mobile }: { mobile: boolean }) {
   return (
     <div className="chronicle-rain" data-rain aria-hidden="true">
       {Array.from({ length: RAIN_DROP_COUNT }, (_, index) => {
+        const length = 28 + (index % 8) * 6
         const style = {
           left: `${(index * 37 + 11) % 104 - 2}%`,
           top: `${(index * 53 + 7) % 118 - 18}%`,
           '--rain-duration': `${0.48 + (index % 7) * 0.06}s`,
           '--rain-delay': `${-((index * 0.137) % 1.1)}s`,
-          '--rain-length': `${28 + (index % 8) * 6}px`,
+          '--rain-length': mobile
+            ? `calc(var(--chronicle-frame-height) * ${length} / 810)`
+            : `${length}px`,
           '--rain-opacity': `${0.45 + (index % 5) * 0.09}`,
         } as CSSProperties
 
@@ -114,12 +124,14 @@ function ChronicleRain() {
   )
 }
 
-function ChronicleEnding() {
+function ChronicleEnding({ active }: { active: boolean }) {
   return (
     <section
       className="chronicle-ending"
       data-ending-layer
       aria-labelledby="chronicle-ending-title"
+      aria-hidden={!active}
+      inert={!active}
     >
       <div className="chronicle-ending__gallery" aria-hidden="true">
         <div className="chronicle-ending__film">
@@ -150,11 +162,11 @@ function ChronicleEnding() {
           '--ending-background': `url(${endingAssets.background})`,
         } as CSSProperties}
       >
-        <h2 className="sr-only" id="chronicle-ending-title">
+        <h2 className="chronicle-ending__heading-text sr-only" id="chronicle-ending-title">
           阿公的手稿：一名基层老党员与共和国同行的七十年
         </h2>
         <img
-          className="chronicle-ending__heading"
+          className="chronicle-ending__heading-art"
           src={endingAssets.heading}
           alt=""
           draggable={false}
@@ -267,8 +279,19 @@ function getCueTextBlockStyle(
   }
 }
 
-function AnnotatedTerm({ annotation }: { annotation: CueTextAnnotation }) {
+function AnnotatedTerm({
+  annotation,
+  mobile,
+}: {
+  annotation: CueTextAnnotation
+  mobile: boolean
+}) {
   const [isOpen, setIsOpen] = useState(false)
+  const [mobilePosition, setMobilePosition] = useState<{
+    left: number
+    top: number
+  } | null>(null)
+  const mobileTooltipRef = useRef<HTMLSpanElement>(null)
   const { refs: floatingRefs, floatingStyles, context } = useFloating({
     open: isOpen,
     onOpenChange: setIsOpen,
@@ -276,46 +299,161 @@ function AnnotatedTerm({ annotation }: { annotation: CueTextAnnotation }) {
     middleware: [offset(10), flip(), shift({ padding: 12 })],
     whileElementsMounted: autoUpdate,
   })
-  const hover = useHover(context, { move: false })
-  const focus = useFocus(context)
+  const hover = useHover(context, { enabled: !mobile, move: false })
+  const focus = useFocus(context, { enabled: !mobile })
+  const click = useClick(context, { enabled: mobile })
   const dismiss = useDismiss(context)
   const role = useRole(context, { role: 'tooltip' })
   const { getReferenceProps, getFloatingProps } = useInteractions([
     hover,
     focus,
+    click,
     dismiss,
     role,
   ])
 
+  useEffect(() => {
+    if (!mobile || !isOpen) return
+
+    const close = () => setIsOpen(false)
+    window.addEventListener('scroll', close, true)
+    window.addEventListener('resize', close)
+
+    return () => {
+      window.removeEventListener('scroll', close, true)
+      window.removeEventListener('resize', close)
+    }
+  }, [isOpen, mobile])
+
+  useLayoutEffect(() => {
+    if (!mobile || !isOpen) return
+
+    const frame = document.querySelector<HTMLElement>('.chronicle-frame')
+    const reference = floatingRefs.reference.current
+    const tooltip = mobileTooltipRef.current
+    if (!frame || !(reference instanceof HTMLElement) || !tooltip) return
+
+    const updatePosition = () => {
+      const frameRect = frame.getBoundingClientRect()
+      const wordRect = reference.getBoundingClientRect()
+      const rotated = frameRect.height > frameRect.width
+      const toLocal = (x: number, y: number) => (
+        rotated
+          ? { x: y - frameRect.top, y: frameRect.right - x }
+          : { x: x - frameRect.left, y: y - frameRect.top }
+      )
+      const corners = [
+        toLocal(wordRect.left, wordRect.top),
+        toLocal(wordRect.right, wordRect.top),
+        toLocal(wordRect.left, wordRect.bottom),
+        toLocal(wordRect.right, wordRect.bottom),
+      ]
+      const word = {
+        left: Math.min(...corners.map(({ x }) => x)),
+        right: Math.max(...corners.map(({ x }) => x)),
+        top: Math.min(...corners.map(({ y }) => y)),
+        bottom: Math.max(...corners.map(({ y }) => y)),
+      }
+      const margin = 8
+      const width = tooltip.offsetWidth
+      const height = tooltip.offsetHeight
+      const left = Math.min(
+        frame.clientWidth - width - margin,
+        Math.max(margin, (word.left + word.right - width) / 2),
+      )
+      const above = word.top - height - margin
+      const top = Math.min(
+        frame.clientHeight - height - margin,
+        Math.max(
+          margin,
+          above >= margin ? above : word.bottom + margin,
+        ),
+      )
+
+      setMobilePosition({ left, top })
+    }
+
+    const observer = new ResizeObserver(updatePosition)
+    observer.observe(frame)
+    observer.observe(reference)
+    observer.observe(tooltip)
+    updatePosition()
+    return () => observer.disconnect()
+  }, [annotation.content, floatingRefs.reference, isOpen, mobile])
+
+  const referenceProps = getReferenceProps()
+  const mobileLayer = mobile
+    ? document.querySelector<HTMLElement>('[data-annotation-layer]')
+    : null
+
   return (
     <>
-      <span
-        className="chronicle-annotation"
-        ref={(node) => floatingRefs.setReference(node)}
-        tabIndex={0}
-        {...getReferenceProps()}
-      >
-        {annotation.term}
-      </span>
-      <FloatingPortal>
-        <span
-          aria-hidden={!isOpen}
-          className="chronicle-annotation__tooltip"
-          ref={(node) => floatingRefs.setFloating(node)}
-          style={{
-            ...floatingStyles,
-            visibility: isOpen ? 'visible' : 'hidden',
-          }}
-          {...getFloatingProps()}
+      {mobile ? (
+        <button
+          className="chronicle-annotation"
+          ref={(node) => floatingRefs.setReference(node)}
+          type="button"
+          {...referenceProps}
         >
-          {annotation.content}
+          {annotation.term}
+        </button>
+      ) : (
+        <span
+          className="chronicle-annotation"
+          ref={(node) => floatingRefs.setReference(node)}
+          tabIndex={0}
+          {...referenceProps}
+        >
+          {annotation.term}
         </span>
-      </FloatingPortal>
+      )}
+      {mobile ? (
+        isOpen && mobileLayer && createPortal(
+          <span
+            className="chronicle-annotation__tooltip chronicle-annotation__tooltip--mobile"
+            ref={(node) => {
+              mobileTooltipRef.current = node
+              floatingRefs.setFloating(node)
+            }}
+            role="tooltip"
+            style={{
+              left: mobilePosition?.left ?? 0,
+              top: mobilePosition?.top ?? 0,
+              visibility: mobilePosition ? 'visible' : 'hidden',
+            }}
+            {...getFloatingProps()}
+          >
+            {annotation.content}
+          </span>,
+          mobileLayer,
+        )
+      ) : (
+        <FloatingPortal>
+          <span
+            aria-hidden={!isOpen}
+            className="chronicle-annotation__tooltip"
+            ref={(node) => floatingRefs.setFloating(node)}
+            style={{
+              ...floatingStyles,
+              visibility: isOpen ? 'visible' : 'hidden',
+            }}
+            {...getFloatingProps()}
+          >
+            {annotation.content}
+          </span>
+        </FloatingPortal>
+      )}
     </>
   )
 }
 
-function CueBlockText({ block }: { block: CueTextBlock }) {
+function CueBlockText({
+  block,
+  mobile,
+}: {
+  block: CueTextBlock
+  mobile: boolean
+}) {
   if (!block.annotations?.length) return block.text
 
   const annotations = block.annotations
@@ -335,7 +473,11 @@ function CueBlockText({ block }: { block: CueTextBlock }) {
     if (index < cursor) return
     if (index > cursor) parts.push(block.text.slice(cursor, index))
     parts.push(
-      <AnnotatedTerm annotation={annotation} key={`${annotation.term}-${index}`} />,
+      <AnnotatedTerm
+        annotation={annotation}
+        key={`${annotation.term}-${index}`}
+        mobile={mobile}
+      />,
     )
     cursor = index + annotation.term.length
   })
@@ -344,7 +486,7 @@ function CueBlockText({ block }: { block: CueTextBlock }) {
   return parts
 }
 
-function CueText({ cue }: { cue: TextSceneCue }) {
+function CueText({ cue, mobile }: { cue: TextSceneCue; mobile: boolean }) {
   return (
     <div className="chronicle-cue__text">
       {cue.blocks.map((block) => {
@@ -357,7 +499,7 @@ function CueText({ cue }: { cue: TextSceneCue }) {
             key={block.figmaNodeId}
             style={getCueTextBlockStyle(cue, block)}
           >
-            <CueBlockText block={block} />
+            <CueBlockText block={block} mobile={mobile} />
           </Tag>
         )
       })}
@@ -371,12 +513,14 @@ function SceneContent({
   activeScene,
   chartSvgMarkup,
   backgroundBound,
+  mobile,
 }: {
   scene: ChronicleScene
   index: number
   activeScene: number
   chartSvgMarkup: Readonly<Record<string, string>>
   backgroundBound: boolean
+  mobile: boolean
 }) {
   const manifest = sceneCueManifests[index]
   const isInAssetWindow = isSceneInAssetWindow(index, activeScene)
@@ -388,6 +532,8 @@ function SceneContent({
       data-layer="content"
       data-scene={index}
       data-motion-active={Math.abs(index - activeScene) <= 1 ? 'true' : undefined}
+      aria-hidden={index !== activeScene}
+      inert={index !== activeScene}
       style={{ '--scene-ratio': scene.sourceWidth / 1620 } as CSSProperties}
     >
       {manifest.cues.filter(
@@ -414,19 +560,21 @@ function SceneContent({
             }}
           >
             {isTextCue(item) ? (
-              <CueText cue={item} />
+              <CueText cue={item} mobile={mobile} />
             ) : item.kind === 'chart'
               && LAYER_ANIMATED_CHART_IDS.has(item.id)
               && chartSvgMarkup[item.id] ? (
               <div
                 className="chronicle-cue__svg"
+                role="img"
+                aria-label={chartDescriptions[item.id]}
                 dangerouslySetInnerHTML={{ __html: chartSvgMarkup[item.id] }}
               />
             ) : item.kind === 'chart' ? (
               <img
                 src={isInAssetWindow ? item.svgAsset : undefined}
                 data-src={item.svgAsset}
-                alt=""
+                alt={chartDescriptions[item.id] ?? ''}
                 draggable={false}
                 decoding="async"
               />
@@ -452,12 +600,14 @@ function TrackSurface({
   activeScene,
   chartSvgMarkup,
   backgroundBound = false,
+  mobile,
 }: {
   track: NarrativeTrack
   surface: TrackSurfaceKind
   activeScene: number
   chartSvgMarkup: Readonly<Record<string, string>>
   backgroundBound?: boolean
+  mobile: boolean
 }) {
   return (
     <div
@@ -477,6 +627,7 @@ function TrackSurface({
               activeScene={activeScene}
               chartSvgMarkup={chartSvgMarkup}
               backgroundBound={backgroundBound}
+              mobile={mobile}
             />
           )
         }
@@ -1239,14 +1390,35 @@ function mapTimelineTimeToScrollProgress(
   return scrollPosition / totalScrollDistance
 }
 
-export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
+type ScrollChronicleProps = {
+  reducedMotion: boolean
+  isInteractive: boolean
+  mobile: boolean
+  scrollAxis: ChronicleScrollAxis
+  viewportKey: string
+}
+
+export function ScrollChronicle({
+  reducedMotion,
+  isInteractive,
+  mobile,
+  scrollAxis,
+  viewportKey,
+}: ScrollChronicleProps) {
   const rootRef = useRef<HTMLElement>(null)
   const stageRef = useRef<HTMLDivElement>(null)
   const frameRef = useRef<HTMLDivElement>(null)
+  const scrollSpacerRef = useRef<HTMLDivElement>(null)
   const timelineRef = useRef<gsap.core.Timeline | null>(null)
   const scrollTriggerRef = useRef<ScrollTrigger | null>(null)
   const sceneStartsRef = useRef<number[]>([])
   const scrollMappingRef = useRef<ScrollMappingSegment[]>([])
+  const resumeTimelineTimeRef = useRef(0)
+  const hasTimelineResumeRef = useRef(false)
+  const geometryTransactionRef = useRef(false)
+  const geometryUnlockTimerRef = useRef(0)
+  const lastFrameGeometryRef = useRef<{ width: number; height: number } | null>(null)
+  const [geometryRevision, setGeometryRevision] = useState(0)
   const staticPreview = useMemo(() => readStaticPreview(), [])
   const timelineProbe = useMemo(() => readTimelineProbe(), [])
   const isMotionDebug = useMemo(() => {
@@ -1263,12 +1435,16 @@ export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
       .map((cue) => ({ id: cue.id, asset: cue.svgAsset })),
     [],
   )
-  const [chartSvgMarkup, setChartSvgMarkup] = useState<Readonly<Record<string, string>> | null>(null)
+  const [chartSvgMarkup, setChartSvgMarkup] = useState<Readonly<Record<string, string>> | null>(
+    null,
+  )
   const initialScene = staticPreview?.scene ?? timelineProbe?.scene ?? 0
   const activeSceneRef = useRef(initialScene)
   const [activeScene, setActiveScene] = useState(initialScene)
 
   useEffect(() => {
+    if (mobile || staticPreview || timelineProbe) return
+
     const shell = rootRef.current?.closest<HTMLElement>('.app-shell')
     if (!shell) return
 
@@ -1280,6 +1456,62 @@ export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
 
     shell.addEventListener('transitionend', refreshAfterShellEntry)
     return () => shell.removeEventListener('transitionend', refreshAfterShellEntry)
+  }, [mobile, staticPreview, timelineProbe])
+
+  useEffect(() => {
+    const frame = frameRef.current
+    if (!frame) return
+
+    const beginGeometryTransaction = () => {
+      geometryTransactionRef.current = true
+      window.clearTimeout(geometryUnlockTimerRef.current)
+      geometryUnlockTimerRef.current = window.setTimeout(() => {
+        geometryTransactionRef.current = false
+      }, 500)
+    }
+    const handleResize = () => {
+      const previous = lastFrameGeometryRef.current
+      if (!previous) return
+      if (
+        Math.abs(frame.clientWidth - previous.width) >= 0.5
+        || Math.abs(frame.clientHeight - previous.height) >= 0.5
+      ) {
+        beginGeometryTransaction()
+      }
+    }
+
+    window.addEventListener('resize', handleResize, true)
+    window.addEventListener('orientationchange', handleResize, true)
+    let width = frame.clientWidth
+    let height = frame.clientHeight
+    lastFrameGeometryRef.current = { width, height }
+    let animationFrame = 0
+    const observer = new ResizeObserver(() => {
+      window.cancelAnimationFrame(animationFrame)
+      animationFrame = window.requestAnimationFrame(() => {
+        const nextWidth = frame.clientWidth
+        const nextHeight = frame.clientHeight
+        if (
+          Math.abs(nextWidth - width) < 0.5
+          && Math.abs(nextHeight - height) < 0.5
+        ) return
+
+        width = nextWidth
+        height = nextHeight
+        lastFrameGeometryRef.current = { width, height }
+        beginGeometryTransaction()
+        setGeometryRevision((value) => value + 1)
+      })
+    })
+
+    observer.observe(frame)
+    return () => {
+      window.cancelAnimationFrame(animationFrame)
+      window.clearTimeout(geometryUnlockTimerRef.current)
+      window.removeEventListener('resize', handleResize, true)
+      window.removeEventListener('orientationchange', handleResize, true)
+      observer.disconnect()
+    }
   }, [])
 
   const jumpToSceneStart = (sceneNumber: number) => {
@@ -1287,24 +1519,39 @@ export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
     const trigger = scrollTriggerRef.current
     const sceneIndex = sceneNumber - 1
     const sceneStart = sceneStartsRef.current[sceneIndex]
-    if (!timeline || !trigger || sceneStart === undefined) return
+    if (!timeline || sceneStart === undefined) return
 
     const timelineProgress = mapTimelineTimeToScrollProgress(
       sceneStart,
       scrollMappingRef.current,
       timeline.duration(),
     )
-    const targetScrollY = Math.ceil(
-      trigger.start + (trigger.end - trigger.start) * timelineProgress,
+    const scroller = rootRef.current
+    const targetScroll = Math.ceil(
+      (scrollMappingRef.current.at(-1)?.scrollEnd ?? 0) * timelineProgress,
     )
 
-    window.scrollTo({ top: targetScrollY, behavior: 'auto' })
-    requestAnimationFrame(() => ScrollTrigger.update())
+    if (mobile) {
+      if (!scroller) return
+      if (scrollAxis === 'y') {
+        scroller.scrollTop = targetScroll
+      } else {
+        scroller.scrollLeft = targetScroll
+      }
+    } else {
+      if (!trigger) return
+      const targetScrollY = Math.ceil(
+        trigger.start + (trigger.end - trigger.start) * timelineProgress,
+      )
+      window.scrollTo({ top: targetScrollY, behavior: 'auto' })
+      requestAnimationFrame(() => ScrollTrigger.update())
+    }
+
     console.info(`[Chronicle debug] 已跳转到第 ${sceneNumber} 屏`, {
       sceneId: chronicleScenes[sceneIndex].id,
       sceneStart,
       timelineProgress,
-      targetScrollY,
+      targetScroll,
     })
   }
 
@@ -1412,6 +1659,19 @@ export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
           : null,
         scrollY: roundDebugValue(window.scrollY, 2),
         scrollHeight: document.documentElement.scrollHeight,
+        narrativeScroll: mobile
+          ? {
+              axis: scrollAxis,
+              offset: roundDebugValue(
+                scrollAxis === 'y' ? root.scrollTop : root.scrollLeft,
+                2,
+              ),
+              extent: roundDebugValue(
+                scrollAxis === 'y' ? root.scrollHeight : root.scrollWidth,
+                2,
+              ),
+            }
+          : null,
         reducedMotion,
         userAgent: navigator.userAgent,
       },
@@ -1510,6 +1770,7 @@ export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
     if (!root || !stage || !viewport || chartSvgMarkup === null) return
 
     const sceneStarts: number[] = []
+    let nativeScrollCleanup: (() => void) | undefined
     const context = gsap.context(() => {
       const allSurfaces = gsap.utils.toArray<HTMLElement>('.chronicle-track-surface', root)
       const allScrollCues = gsap.utils.toArray<HTMLElement>(
@@ -1715,7 +1976,11 @@ export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
           '.chronicle-boat__skin--chalk .chronicle-boat__bob',
         ].join(', '), {
           rotation: () => BOAT_BOB_ROTATION * getBoatBobMultiplier(),
-          y: () => BOAT_BOB_Y * getBoatBobMultiplier(),
+          y: () => (
+            mobile
+              ? BOAT_BOB_Y * viewport.clientHeight / 810
+              : BOAT_BOB_Y
+          ) * getBoatBobMultiplier(),
           duration: 1,
           yoyo: true,
           repeat: -1,
@@ -2276,9 +2541,11 @@ export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
       )
       scrollMappingRef.current = scrollMapping
       let hasCompletedInitialRefresh = false
-      let refreshTimelineTime = 0
+      let refreshTimelineTime = resumeTimelineTimeRef.current
 
-      const syncTimelineToScroll = (progress: number) => {
+      const syncTimelineToScroll = (progress: number, bypassGeometryLock = false) => {
+        if (geometryTransactionRef.current && !bypassGeometryLock) return
+
         const time = mapScrollProgressToTimelineTime(
           progress,
           scrollMapping,
@@ -2298,8 +2565,72 @@ export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
           setActiveScene(nextActive)
         }
       }
+      const finishGeometryTransaction = () => {
+        geometryTransactionRef.current = false
+        window.clearTimeout(geometryUnlockTimerRef.current)
+      }
 
       timeline.pause(0)
+      if (mobile) {
+        const spacer = scrollSpacerRef.current
+        if (!spacer) return
+
+        const totalDistance = scrollMapping.at(-1)?.scrollEnd ?? 0
+        if (scrollAxis === 'y') {
+          spacer.style.width = '100%'
+          spacer.style.height = `${Math.ceil(totalDistance)}px`
+        } else {
+          spacer.style.width = `${Math.ceil(totalDistance)}px`
+          spacer.style.height = '100%'
+        }
+
+        // Force the scroll extent before restoring the time on the new axis.
+        void root[scrollAxis === 'y' ? 'scrollHeight' : 'scrollWidth']
+        const resumeTime = hasTimelineResumeRef.current
+          ? resumeTimelineTimeRef.current
+          : 0
+        const initialProgress = gsap.utils.clamp(
+          0,
+          1,
+          mapTimelineTimeToScrollProgress(
+            resumeTime,
+            scrollMapping,
+            timeline.duration(),
+          ),
+        )
+
+        root.scrollTop = 0
+        root.scrollLeft = 0
+        if (scrollAxis === 'y') {
+          root.scrollTop = Math.round(initialProgress * totalDistance)
+        } else {
+          root.scrollLeft = Math.round(initialProgress * totalDistance)
+        }
+        finishGeometryTransaction()
+        syncTimelineToScroll(initialProgress, true)
+
+        let scrollAnimationFrame = 0
+        const syncFromNativeScroll = () => {
+          scrollAnimationFrame = 0
+          if (root.dataset.scrollLocked === 'true') return
+          syncTimelineToScroll(getScrollProgress(
+            scrollAxis === 'y' ? root.scrollTop : root.scrollLeft,
+            scrollMapping.at(-1)?.scrollEnd ?? 0,
+          ))
+        }
+        const handleScroll = () => {
+          if (scrollAnimationFrame) return
+          scrollAnimationFrame = window.requestAnimationFrame(syncFromNativeScroll)
+        }
+
+        root.addEventListener('scroll', handleScroll, { passive: true })
+        nativeScrollCleanup = () => {
+          root.removeEventListener('scroll', handleScroll)
+          window.cancelAnimationFrame(scrollAnimationFrame)
+        }
+        return
+      }
+
       scrollTriggerRef.current = ScrollTrigger.create({
         trigger: root,
         start: 'top top',
@@ -2324,7 +2655,18 @@ export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
           timeline.invalidate()
           if (!hasCompletedInitialRefresh) {
             hasCompletedInitialRefresh = true
-            syncTimelineToScroll(trigger.progress)
+            const progress = hasTimelineResumeRef.current
+              ? mapTimelineTimeToScrollProgress(
+                  refreshTimelineTime,
+                  scrollMapping,
+                  timeline.duration(),
+                )
+              : trigger.progress
+            trigger.scroll(
+              trigger.start + (trigger.end - trigger.start) * progress,
+            )
+            finishGeometryTransaction()
+            syncTimelineToScroll(progress, true)
             return
           }
 
@@ -2336,7 +2678,8 @@ export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
           trigger.scroll(
             trigger.start + (trigger.end - trigger.start) * progress,
           )
-          syncTimelineToScroll(progress)
+          finishGeometryTransaction()
+          syncTimelineToScroll(progress, true)
         },
         onUpdate: ({ progress }) => syncTimelineToScroll(progress),
       })
@@ -2344,6 +2687,11 @@ export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
     }, root)
 
     return () => {
+      nativeScrollCleanup?.()
+      if (timelineRef.current) {
+        resumeTimelineTimeRef.current = timelineRef.current.time()
+        hasTimelineResumeRef.current = true
+      }
       context.revert()
       timelineRef.current = null
       scrollTriggerRef.current = null
@@ -2353,56 +2701,89 @@ export function ScrollChronicle({ reducedMotion }: { reducedMotion: boolean }) {
   }, [
     chartSvgMarkup,
     coverMotion,
+    geometryRevision,
+    mobile,
     reducedMotion,
     scene4Mask,
+    scrollAxis,
     staticPreview,
     timelineProbe,
+    viewportKey,
   ])
+
+  const activeTrack = chronicleScenes[activeScene].track
 
   return (
     <section
-      className={`chronicle ${staticPreview ? 'chronicle--static' : ''}`}
+      className={`chronicle ${staticPreview ? 'chronicle--static' : ''} ${mobile ? 'chronicle--mobile' : ''}`}
       ref={rootRef}
       aria-label="现代中国历史滚动长卷"
+      data-mobile-axis={mobile ? scrollAxis : undefined}
+      data-scroll-locked={!isInteractive ? 'true' : undefined}
     >
       <div className="chronicle-stage" ref={stageRef}>
-        <div className="chronicle-frame" ref={frameRef}>
-          <div className="chronicle-matte" aria-hidden="true" />
+        <div className="chronicle-landscape-plane">
+          <div className="chronicle-frame" ref={frameRef}>
+            <div className="chronicle-matte" aria-hidden="true" />
 
-          {!staticPreview && <ChronicleCover />}
+            {!staticPreview && <ChronicleCover mobile={mobile} />}
 
-          <div className="chronicle-world-layer chronicle-world-layer--exterior-background" aria-hidden="true">
-            <TrackSurface track="exterior" surface="background" activeScene={activeScene} chartSvgMarkup={chartSvgMarkup ?? {}} />
-          </div>
-          <div className="chronicle-world-layer chronicle-world-layer--interior-background" aria-hidden="true">
-            <TrackSurface track="interior" surface="background" activeScene={activeScene} chartSvgMarkup={chartSvgMarkup ?? {}} />
-          </div>
-          <div className="chronicle-world-layer chronicle-world-layer--exterior-content chronicle-world-layer--background-bound-content" aria-hidden="true">
-            <TrackSurface track="exterior" surface="content" activeScene={activeScene} chartSvgMarkup={chartSvgMarkup ?? {}} backgroundBound />
-          </div>
-          <ChronicleBoat />
-          <div className="chronicle-world-layer chronicle-world-layer--exterior-foreground" aria-hidden="true">
-            <TrackSurface track="exterior" surface="foreground" activeScene={activeScene} chartSvgMarkup={chartSvgMarkup ?? {}} />
-          </div>
-          <div className="chronicle-world-layer chronicle-world-layer--exterior-content" aria-hidden="true">
-            <TrackSurface track="exterior" surface="content" activeScene={activeScene} chartSvgMarkup={chartSvgMarkup ?? {}} />
-          </div>
-          <div className="chronicle-world-layer chronicle-world-layer--interior-foreground" aria-hidden="true">
-            <TrackSurface track="interior" surface="foreground" activeScene={activeScene} chartSvgMarkup={chartSvgMarkup ?? {}} />
-          </div>
-          <div className="chronicle-world-layer chronicle-world-layer--interior-content" aria-hidden="true">
-            <TrackSurface track="interior" surface="content" activeScene={activeScene} chartSvgMarkup={chartSvgMarkup ?? {}} />
-          </div>
+            <div className="chronicle-world-layer chronicle-world-layer--exterior-background" aria-hidden="true">
+              <TrackSurface track="exterior" surface="background" activeScene={activeScene} chartSvgMarkup={chartSvgMarkup ?? {}} mobile={mobile} />
+            </div>
+            <div className="chronicle-world-layer chronicle-world-layer--interior-background" aria-hidden="true">
+              <TrackSurface track="interior" surface="background" activeScene={activeScene} chartSvgMarkup={chartSvgMarkup ?? {}} mobile={mobile} />
+            </div>
+            <div
+              className="chronicle-world-layer chronicle-world-layer--exterior-content chronicle-world-layer--background-bound-content"
+              aria-hidden={activeTrack !== 'exterior'}
+              inert={activeTrack !== 'exterior'}
+            >
+              <TrackSurface track="exterior" surface="content" activeScene={activeScene} chartSvgMarkup={chartSvgMarkup ?? {}} backgroundBound mobile={mobile} />
+            </div>
+            <ChronicleBoat />
+            <div className="chronicle-world-layer chronicle-world-layer--exterior-foreground" aria-hidden="true">
+              <TrackSurface track="exterior" surface="foreground" activeScene={activeScene} chartSvgMarkup={chartSvgMarkup ?? {}} mobile={mobile} />
+            </div>
+            <div
+              className="chronicle-world-layer chronicle-world-layer--exterior-content"
+              aria-hidden={activeTrack !== 'exterior'}
+              inert={activeTrack !== 'exterior'}
+            >
+              <TrackSurface track="exterior" surface="content" activeScene={activeScene} chartSvgMarkup={chartSvgMarkup ?? {}} mobile={mobile} />
+            </div>
+            <div className="chronicle-world-layer chronicle-world-layer--interior-foreground" aria-hidden="true">
+              <TrackSurface track="interior" surface="foreground" activeScene={activeScene} chartSvgMarkup={chartSvgMarkup ?? {}} mobile={mobile} />
+            </div>
+            <div
+              className="chronicle-world-layer chronicle-world-layer--interior-content"
+              aria-hidden={activeTrack !== 'interior'}
+              inert={activeTrack !== 'interior'}
+            >
+              <TrackSurface track="interior" surface="content" activeScene={activeScene} chartSvgMarkup={chartSvgMarkup ?? {}} mobile={mobile} />
+            </div>
 
-          {!staticPreview && <ChronicleEnding />}
+            {!staticPreview && (
+              <ChronicleEnding active={activeScene === chronicleScenes.length - 1} />
+            )}
 
-          <ChronicleRain />
+            <ChronicleRain mobile={mobile} />
 
-          <p className="sr-only" aria-live="polite">
-            第 {activeScene + 1} 幕：{chronicleScenes[activeScene].title}
-          </p>
+            {mobile && <div className="chronicle-annotation-layer" data-annotation-layer />}
+
+            <p className="sr-only" aria-live="polite">
+              第 {activeScene + 1} 幕：{chronicleScenes[activeScene].title}
+            </p>
+          </div>
         </div>
       </div>
+      {mobile && !staticPreview && (
+        <div
+          className="chronicle-scroll-spacer"
+          ref={scrollSpacerRef}
+          aria-hidden="true"
+        />
+      )}
       {isMotionDebug && !staticPreview && (
         <CoverMotionDebugPanel value={coverMotion} onChange={setCoverMotion} />
       )}

@@ -12,14 +12,16 @@ function getTileIndex(position: number) {
   return 0
 }
 
-export function CoverWindowLoop() {
+export function CoverWindowLoop({ mobile }: { mobile: boolean }) {
   const trackRef = useRef<HTMLDivElement>(null)
   const positionRef = useRef(0)
   const currentTileRef = useRef(0)
   const activeRef = useRef(true)
   const [currentTile, setCurrentTile] = useState(0)
+  const [scale, setScale] = useState(1)
   const reducedMotion = usePrefersReducedMotion()
   const renderedCurrentTile = reducedMotion ? 0 : currentTile
+  const renderedScale = mobile ? scale : 1
 
   const mountedTiles = useMemo(() => (
     Array.from({ length: MOUNTED_TILE_COUNT }, (_, offset) => {
@@ -27,6 +29,20 @@ export function CoverWindowLoop() {
       return { ...coverWindowPanorama.tiles[index], index }
     })
   ), [renderedCurrentTile])
+
+  useEffect(() => {
+    if (!mobile) return
+
+    const frame = trackRef.current?.closest<HTMLElement>('.chronicle-frame')
+    if (!frame) return
+
+    const updateScale = () => setScale(frame.clientHeight / 810)
+    const observer = new ResizeObserver(updateScale)
+
+    observer.observe(frame)
+    updateScale()
+    return () => observer.disconnect()
+  }, [mobile])
 
   useEffect(() => {
     const track = trackRef.current
@@ -65,7 +81,7 @@ export function CoverWindowLoop() {
         setCurrentTile(safeTile)
       }
 
-      track.style.transform = `translate3d(${-offset}px, 0, 0)`
+      track.style.transform = `translate3d(${-offset * renderedScale}px, 0, 0)`
       animationFrame = window.requestAnimationFrame(tick)
     }
 
@@ -82,7 +98,7 @@ export function CoverWindowLoop() {
       coverObserver.disconnect()
       document.removeEventListener('visibilitychange', updateActivity)
     }
-  }, [reducedMotion])
+  }, [reducedMotion, renderedScale])
 
   return (
     <div className="chronicle-cover__window-loop" aria-hidden="true">
@@ -91,7 +107,7 @@ export function CoverWindowLoop() {
           <img
             className="chronicle-cover__window-tile"
             key={tile.index}
-            style={{ width: `${tile.width}px` }}
+            style={{ width: `${tile.width * renderedScale}px` }}
             src={tile.src}
             alt=""
             draggable={false}
